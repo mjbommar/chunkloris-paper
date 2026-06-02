@@ -1,0 +1,10 @@
+FROM ruby:3.3-slim
+RUN apt-get update && apt-get install -y --no-install-recommends \
+        build-essential ca-certificates && rm -rf /var/lib/apt/lists/*
+WORKDIR /app
+RUN gem install --no-document puma:6.4.3 rack:3.1.7 stackprof:0.2.27
+COPY config.ru /app/config.ru
+EXPOSE 8000
+# Single worker, multiple threads -- typical small-deployment shape;
+# also gives us a single process to profile cleanly.
+CMD ["puma", "-b", "tcp://0.0.0.0:8000", "-w", "0", "-t", "8:8", "/app/config.ru"]

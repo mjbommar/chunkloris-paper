@@ -1,0 +1,6 @@
+FROM golang:1.23-bookworm
+WORKDIR /app
+COPY server_nethttp.go .
+RUN go mod init srv && go build -o /usr/local/bin/srv server_nethttp.go
+EXPOSE 8000 6060
+CMD ["/usr/local/bin/srv"]

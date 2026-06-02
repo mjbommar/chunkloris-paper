@@ -1,0 +1,324 @@
+{
+  "schema_version": "1.0",
+  "generated_at": "2026-05-17T00:00:00Z",
+  "host": {
+    "kernel": "Linux 7.0.0-14-generic",
+    "cpu_model": "host has 24 cores; per-container cpus=1",
+    "cpu_count": 24,
+    "memory_gb": 123.3
+  },
+  "servers": [
+    {
+      "id": "uvicorn-httptools",
+      "ecosystem": "python",
+      "name": "uvicorn",
+      "version": "0.32.1",
+      "runtime": "python-3.12",
+      "concurrency_model": "event-loop",
+      "parser": "httptools (Cython wrapper around node http_parser)",
+      "delivery_granularity": "per-chunk",
+      "limit_chunks_helper": "none",
+      "containerization": {"image": "python:3.12-slim", "cpus": 1},
+      "verdict": "VULNERABLE-PER-CHUNK",
+      "measurements": [
+        {"mode": "A-bridge-coalesced", "n_bytes": 50000, "n_chunks": 50000, "wall_seconds": 0.13, "server_us_per_chunk": 2.6},
+        {"mode": "A-bridge-coalesced", "n_bytes": 100000, "n_chunks": 100000, "wall_seconds": 0.24, "server_us_per_chunk": 2.4},
+        {"mode": "A-bridge-coalesced", "n_bytes": 250000, "n_chunks": 250000, "wall_seconds": 0.53, "server_us_per_chunk": 2.1},
+        {"mode": "A-bridge-coalesced", "n_bytes": 500000, "n_chunks": 500000, "wall_seconds": 1.02, "server_us_per_chunk": 2.04},
+        {"mode": "A-bridge-coalesced", "n_bytes": 1000000, "n_chunks": 1000000, "wall_seconds": 2.07, "server_us_per_chunk": 2.07}
+      ],
+      "scaling_exponent_mode_a": 1.0
+    },
+    {
+      "id": "daphne",
+      "ecosystem": "python",
+      "name": "daphne",
+      "version": "4.x",
+      "runtime": "python-3.12",
+      "concurrency_model": "event-loop",
+      "parser": "Twisted (twisted.web.http)",
+      "delivery_granularity": "per-chunk",
+      "limit_chunks_helper": "none",
+      "containerization": {"image": "python:3.12-slim", "cpus": 1},
+      "verdict": "VULNERABLE-PER-CHUNK",
+      "measurements": [
+        {"mode": "A-bridge-coalesced", "n_bytes": 50000, "wall_seconds": 0.17, "server_us_per_chunk": 3.4},
+        {"mode": "A-bridge-coalesced", "n_bytes": 100000, "wall_seconds": 0.36, "server_us_per_chunk": 3.6},
+        {"mode": "A-bridge-coalesced", "n_bytes": 250000, "wall_seconds": 0.67, "server_us_per_chunk": 2.7},
+        {"mode": "A-bridge-coalesced", "n_bytes": 500000, "wall_seconds": 1.31, "server_us_per_chunk": 2.62},
+        {"mode": "A-bridge-coalesced", "n_bytes": 1000000, "wall_seconds": 2.54, "server_us_per_chunk": 2.54}
+      ],
+      "scaling_exponent_mode_a": 1.0
+    },
+    {
+      "id": "uvicorn-h11",
+      "ecosystem": "python",
+      "name": "uvicorn",
+      "version": "0.32.1",
+      "runtime": "python-3.12",
+      "concurrency_model": "event-loop",
+      "parser": "h11 0.16.0 (pure Python)",
+      "delivery_granularity": "per-chunk",
+      "limit_chunks_helper": "exposed-stdlib",
+      "containerization": {"image": "python:3.12-slim", "cpus": 1},
+      "verdict": "VULNERABLE-PER-CHUNK",
+      "measurements": [
+        {"mode": "A-bridge-coalesced", "n_bytes": 50000, "wall_seconds": 0.27, "server_us_per_chunk": 5.4},
+        {"mode": "A-bridge-coalesced", "n_bytes": 100000, "wall_seconds": 0.54, "server_us_per_chunk": 5.4},
+        {"mode": "A-bridge-coalesced", "n_bytes": 250000, "wall_seconds": 1.27, "server_us_per_chunk": 5.1},
+        {"mode": "A-bridge-coalesced", "n_bytes": 500000, "wall_seconds": 2.48, "server_us_per_chunk": 4.96},
+        {"mode": "A-bridge-coalesced", "n_bytes": 1000000, "wall_seconds": 4.98, "server_us_per_chunk": 4.98}
+      ],
+      "scaling_exponent_mode_a": 1.0,
+      "batching_primitive": {"available": false, "name": "HIGH_WATER_LIMIT (64KB body-buffer cap)", "default_installed": true, "notes": "Bounds per-cycle body size; does not aggregate Data events into one receive() message."},
+      "source_citations": [
+        {"what": "decoder", "file_line": "h11/_connection.py:438", "url": "https://github.com/python-hyper/h11/blob/v0.16.0/h11/_connection.py"},
+        {"what": "handler-delivery", "file_line": "uvicorn/protocols/http/h11_impl.py:257-261", "url": "https://github.com/encode/uvicorn/blob/0.32.1/uvicorn/protocols/http/h11_impl.py"}
+      ]
+    },
+    {
+      "id": "hypercorn-h11",
+      "ecosystem": "python",
+      "name": "hypercorn",
+      "version": "0.17.3",
+      "runtime": "python-3.12",
+      "concurrency_model": "event-loop",
+      "parser": "h11 0.16.0",
+      "delivery_granularity": "per-chunk",
+      "limit_chunks_helper": "none",
+      "verdict": "VULNERABLE-PER-CHUNK",
+      "measurements": [
+        {"mode": "A-bridge-coalesced", "n_bytes": 50000, "wall_seconds": 0.54, "server_us_per_chunk": 10.8},
+        {"mode": "A-bridge-coalesced", "n_bytes": 100000, "wall_seconds": 0.87, "server_us_per_chunk": 8.7},
+        {"mode": "A-bridge-coalesced", "n_bytes": 250000, "wall_seconds": 2.06, "server_us_per_chunk": 8.2},
+        {"mode": "A-bridge-coalesced", "n_bytes": 500000, "wall_seconds": 3.87, "server_us_per_chunk": 7.74},
+        {"mode": "A-bridge-coalesced", "n_bytes": 1000000, "wall_seconds": 7.56, "server_us_per_chunk": 7.56}
+      ],
+      "scaling_exponent_mode_a": 1.0
+    },
+    {
+      "id": "granian",
+      "ecosystem": "python",
+      "name": "granian",
+      "version": "1.x",
+      "runtime": "python-3.12 (Rust core)",
+      "concurrency_model": "event-loop",
+      "parser": "Rust hyper internals exposed to Python",
+      "delivery_granularity": "per-chunk",
+      "limit_chunks_helper": "none",
+      "verdict": "VULNERABLE-PER-CHUNK",
+      "measurements": [
+        {"mode": "A-bridge-coalesced", "n_bytes": 50000, "wall_seconds": 1.34, "server_us_per_chunk": 26.8},
+        {"mode": "A-bridge-coalesced", "n_bytes": 100000, "wall_seconds": 2.09, "server_us_per_chunk": 20.9},
+        {"mode": "A-bridge-coalesced", "n_bytes": 250000, "wall_seconds": 4.66, "server_us_per_chunk": 18.64},
+        {"mode": "A-bridge-coalesced", "n_bytes": 500000, "wall_seconds": 7.49, "server_us_per_chunk": 14.98},
+        {"mode": "A-bridge-coalesced", "n_bytes": 1000000, "wall_seconds": 14.4, "server_us_per_chunk": 14.4}
+      ],
+      "scaling_exponent_mode_a": 1.0,
+      "notes": "Rust core but the Rust->Python bridge adds per-chunk cost; ends up slower than pure-Python uvicorn-h11."
+    },
+    {
+      "id": "go-net-http",
+      "ecosystem": "go",
+      "name": "net/http (stdlib)",
+      "version": "go-1.23.12",
+      "runtime": "go-1.23",
+      "concurrency_model": "n-m-scheduler",
+      "parser": "Go stdlib chunked decoder (net/http/internal/chunked.go)",
+      "delivery_granularity": "per-chunk",
+      "limit_chunks_helper": "none",
+      "verdict": "VULNERABLE-PER-CHUNK",
+      "measurements": [
+        {"mode": "A-bridge-coalesced", "n_bytes": 250000, "wall_seconds": 0.012, "server_us_per_chunk": 0.048, "notes": "Mode A near-instant (bridge coalesces)"},
+        {"mode": "B-paced-100us", "n_bytes": 250000, "wall_seconds": 25.7, "server_cpu_pct": 13.0, "server_us_per_chunk": 13.4}
+      ],
+      "scaling_exponent_mode_a": 1.0,
+      "top_hot_functions": [
+        {"rank": 1, "function": "main.upload -> io.ReadAll -> body.Read", "tooling": "pprof"},
+        {"rank": 2, "function": "chunkedReader.beginChunk", "tooling": "pprof"},
+        {"rank": 3, "function": "bufio.Reader.fill", "tooling": "pprof"},
+        {"rank": 4, "function": "syscall.Read", "tooling": "pprof", "notes": "one syscall per chunk; 73% of cumtime in syscall+bufio.fill loop"}
+      ],
+      "scoop": {
+        "prior_cve": ["CVE-2023-39326 chunk-extension cost cap (does not mitigate raw chunk count)"],
+        "prior_issue": ["golang/go#64433", "golang/go#6574 unrelated client-side", "golang/go#62298 MaxHeaderCount proposal"],
+        "maintainer_position": "unknown"
+      }
+    },
+    {
+      "id": "gin",
+      "ecosystem": "go",
+      "name": "gin",
+      "version": "1.10.1",
+      "runtime": "go-1.23",
+      "concurrency_model": "n-m-scheduler",
+      "parser": "go net/http chunked decoder (unchanged)",
+      "delivery_granularity": "per-chunk",
+      "limit_chunks_helper": "none",
+      "verdict": "VULNERABLE-PER-CHUNK",
+      "measurements": [
+        {"mode": "B-paced-100us", "n_bytes": 250000, "wall_seconds": 25.7, "server_us_per_chunk": 13.4, "notes": "indistinguishable from net/http: uses the stdlib decoder"}
+      ],
+      "scaling_exponent_mode_a": 1.0
+    },
+    {
+      "id": "axum",
+      "ecosystem": "rust",
+      "name": "axum (on hyper)",
+      "version": "0.7 / hyper 1.x",
+      "runtime": "rust-1.83 (release build)",
+      "concurrency_model": "event-loop",
+      "parser": "hyper internal chunked decoder (ChunkedState::Body)",
+      "delivery_granularity": "per-chunk",
+      "limit_chunks_helper": "exposed-stdlib",
+      "verdict": "VULNERABLE-PER-CHUNK",
+      "measurements": [
+        {"mode": "A-bridge-coalesced", "n_bytes": 250000, "wall_seconds": 1.07, "server_us_per_chunk": 4.3},
+        {"mode": "B-paced-100us", "n_bytes": 250000, "wall_seconds": 25.6, "notes": "wall pacing-bound"},
+        {"mode": "control-single-write", "n_bytes": 1500000, "wall_seconds": 0.008, "notes": "1 syscall for entire body; confirms per-chunk poll loop is the cost"}
+      ],
+      "scaling_exponent_mode_a": 1.0,
+      "batching_primitive": {"available": true, "name": "BodyExt::limit_chunks(N) (application-side cap, not aggregator)", "default_installed": false, "notes": "Application sets per-request chunk cap; doesn't aggregate into bigger messages."},
+      "scoop": {
+        "prior_issue": ["hyper#4008 'Provide built-in chunked request limits & CPU-safe streaming helpers' (closed not_planned 2026-01-12)", "hyper#2414 byte-cap analog (addressed via http_body_util::Limited)"],
+        "maintainer_position": "declined",
+        "url_refs": ["https://github.com/hyperium/hyper/issues/4008"]
+      }
+    },
+    {
+      "id": "actix-web",
+      "ecosystem": "rust",
+      "name": "actix-web",
+      "version": "4.x",
+      "runtime": "rust-1.83 (release build)",
+      "concurrency_model": "actor",
+      "parser": "actix-http PayloadDecoder",
+      "delivery_granularity": "per-chunk",
+      "limit_chunks_helper": "none",
+      "verdict": "VULNERABLE-PER-CHUNK",
+      "measurements": [
+        {"mode": "A-bridge-coalesced", "n_bytes": 250000, "wall_seconds": 0.58, "server_us_per_chunk": 2.3},
+        {"mode": "B-paced-100us", "n_bytes": 250000, "wall_seconds": 25.7, "notes": "wall pacing-bound"},
+        {"mode": "control-single-write", "n_bytes": 1500000, "wall_seconds": 0.008}
+      ],
+      "scaling_exponent_mode_a": 1.0
+    },
+    {
+      "id": "node-http",
+      "ecosystem": "node",
+      "name": "node http.Server (built-in)",
+      "version": "node-22.22.3",
+      "runtime": "node-22",
+      "concurrency_model": "event-loop",
+      "parser": "llhttp (C, called via N-API)",
+      "delivery_granularity": "per-chunk",
+      "limit_chunks_helper": "none",
+      "verdict": "QUADRATIC",
+      "measurements": [
+        {"mode": "A-bridge-coalesced", "n_bytes": 50000, "wall_seconds": 8.25, "server_us_per_chunk": 165},
+        {"mode": "A-bridge-coalesced", "n_bytes": 100000, "wall_seconds": 53.76, "server_us_per_chunk": 537},
+        {"mode": "A-bridge-coalesced", "n_bytes": 250000, "wall_seconds": 282.02, "server_us_per_chunk": 1128, "notes": "single core saturated for full duration"},
+        {"mode": "B-paced-100us", "n_bytes": 50000, "wall_seconds": 5.17, "server_us_per_chunk": 103},
+        {"mode": "B-paced-100us", "n_bytes": 100000, "wall_seconds": 10.27},
+        {"mode": "B-paced-100us", "n_bytes": 250000, "wall_seconds": 25.7, "server_cpu_pct": 6, "server_us_per_chunk": 5.5, "notes": "Mode B linear at pacing floor; per-chunk WORK is 5-7us"}
+      ],
+      "scaling_exponent_mode_a": 2.0,
+      "top_hot_functions": [
+        {"rank": 1, "function": "parserOnBody", "file_line": "node:_http_common:128", "tooling": "v8.log"},
+        {"rank": 2, "function": "maybeReadMore", "file_line": "node:internal/streams/readable:857", "tooling": "v8.log"},
+        {"rank": 3, "function": "addChunk", "file_line": "node:internal/streams/readable:550", "tooling": "v8.log"},
+        {"rank": 4, "function": "readableAddChunkPushByteMode", "file_line": "node:internal/streams/readable:463", "tooling": "v8.log"},
+        {"rank": 5, "function": "process.nextTick", "file_line": "node:internal/process/task_queues:111", "tooling": "v8.log", "notes": "nextTick per chunk -> queue drain becomes superlinear"}
+      ],
+      "scoop": {
+        "prior_cve": ["CVE-2026-7790 cowlib chunked-size (different mechanism, same family)", "CVE-2025-66373 chunked smuggling (not amplification)"],
+        "prior_issue": ["nodejs/llhttp#20 (correctness, not amplification)"],
+        "maintainer_position": "unknown",
+        "url_refs": ["https://hackerone.com/reports/1238099"]
+      }
+    },
+    {
+      "id": "express",
+      "ecosystem": "node",
+      "name": "express",
+      "version": "5.2.1",
+      "runtime": "node-22",
+      "concurrency_model": "event-loop",
+      "parser": "node http.Server (llhttp) underneath",
+      "delivery_granularity": "per-chunk",
+      "limit_chunks_helper": "none",
+      "verdict": "QUADRATIC",
+      "measurements": [
+        {"mode": "A-bridge-coalesced", "n_bytes": 50000, "wall_seconds": 8.00},
+        {"mode": "A-bridge-coalesced", "n_bytes": 100000, "wall_seconds": 47.99},
+        {"mode": "A-bridge-coalesced", "n_bytes": 250000, "wall_seconds": 324, "notes": "extrapolated from quadratic fit"}
+      ],
+      "scaling_exponent_mode_a": 2.0
+    },
+    {
+      "id": "fastify",
+      "ecosystem": "node",
+      "name": "fastify",
+      "version": "5.x",
+      "runtime": "node-22",
+      "concurrency_model": "event-loop",
+      "parser": "node http.Server (llhttp) underneath",
+      "delivery_granularity": "per-chunk",
+      "limit_chunks_helper": "none",
+      "verdict": "QUADRATIC",
+      "measurements": [
+        {"mode": "A-bridge-coalesced", "n_bytes": 50000, "wall_seconds": 8.65},
+        {"mode": "A-bridge-coalesced", "n_bytes": 100000, "wall_seconds": 52.07},
+        {"mode": "A-bridge-coalesced", "n_bytes": 250000, "wall_seconds": 339}
+      ],
+      "scaling_exponent_mode_a": 2.0
+    },
+    {
+      "id": "vertx",
+      "ecosystem": "jvm",
+      "name": "Vert.x",
+      "version": "4.5.10",
+      "runtime": "jdk-21",
+      "concurrency_model": "event-loop",
+      "parser": "Netty HttpObjectDecoder",
+      "delivery_granularity": "per-chunk",
+      "limit_chunks_helper": "none",
+      "verdict": "VULNERABLE-PER-CHUNK",
+      "measurements": [
+        {"mode": "A-bridge-coalesced", "n_bytes": 250000, "wall_seconds": 0.105, "server_us_per_chunk": 0.42},
+        {"mode": "B-paced-100us", "n_bytes": 250000, "wall_seconds": 25.66, "server_cpu_pct": 7.0, "server_us_per_chunk": 7.2}
+      ],
+      "scaling_exponent_mode_a": 1.0,
+      "batching_primitive": {"available": true, "name": "Netty HttpObjectAggregator", "default_installed": false, "notes": "Available but Vert.x deliberately does NOT install it on the default codec pipeline (would break streaming request().handler() contract)."},
+      "top_hot_functions": [
+        {"rank": 1, "function": "HttpObjectDecoder.decode -> Http1xServerRequest.onData", "tooling": "async-profiler"}
+      ]
+    },
+    {
+      "id": "spring-boot-tomcat",
+      "ecosystem": "jvm",
+      "name": "Spring Boot + Tomcat",
+      "version": "spring-boot-3.3.5 / tomcat-10.1",
+      "runtime": "jdk-21",
+      "concurrency_model": "thread-per-conn",
+      "parser": "Tomcat ChunkedInputFilter",
+      "delivery_granularity": "per-chunk",
+      "limit_chunks_helper": "none",
+      "verdict": "VULNERABLE-PER-CHUNK",
+      "measurements": [
+        {"mode": "A-bridge-coalesced", "n_bytes": 250000, "wall_seconds": 0.033, "server_us_per_chunk": 0.13},
+        {"mode": "B-paced-100us", "n_bytes": 250000, "wall_seconds": 26.0, "server_cpu_pct": 20.5, "server_us_per_chunk": 21}
+      ],
+      "scaling_exponent_mode_a": 1.0,
+      "top_hot_functions": [
+        {"rank": 1, "function": "Tomcat NIO Poller", "tooling": "async-profiler"},
+        {"rank": 2, "function": "worker SynchronizedQueue handoff (pthread_cond_signal, ObjectMonitor::wait)", "tooling": "async-profiler", "notes": "Servlet thread-per-request model adds per-chunk context switch on top of the parser cost"},
+        {"rank": 3, "function": "ChunkedInputFilter.parseChunkHeader", "tooling": "async-profiler"}
+      ],
+      "scoop": {
+        "prior_cve": ["CVE-2014-0075 chunk-size integer overflow", "CVE-2012-3544 chunk-extension streaming DoS", "CVE-2021-33037 TE smuggling"],
+        "maintainer_position": "unknown"
+      }
+    }
+  ]
+}

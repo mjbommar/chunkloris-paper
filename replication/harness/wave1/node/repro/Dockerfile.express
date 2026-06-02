@@ -1,0 +1,7 @@
+FROM node:22-slim
+WORKDIR /app
+COPY package.json .
+RUN npm install --no-audit --no-fund
+COPY express-server.js .
+EXPOSE 8000
+CMD ["node", "express-server.js"]

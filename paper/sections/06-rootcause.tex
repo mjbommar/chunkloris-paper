@@ -1,0 +1,230 @@
+\subsection{The parser/dispatcher boundary}
+\label{sec:rc-boundary}
+
+Every HTTP server in our sample is structured as a parser feeding
+a dispatcher. The parser decodes wire bytes (chunked-TE framing,
+header parsing, body length tracking). The dispatcher delivers
+decoded body bytes into application code (ASGI handler, Go's
+\fname{http.Handler}, Tower service, Node \fname{Readable},
+Servlet \fname{getInputStream}, Erlang process mailbox, Pipelines
+\fname{PipeReader}).
+
+The per-chunk amplification class lives at the boundary between
+those two abstractions. The parser is required by the wire format
+to track chunk-level state; this is unavoidable and roughly
+constant-cost per chunk in our sample (10s of nanoseconds to a
+few microseconds in C, less than \SI{10}{\micro\second} in pure
+managed code). The dispatcher's cost \emph{per delivery event}
+varies wildly with the runtime: a Go goroutine wake costs a few
+microseconds; an asyncio \fname{await receive} costs perhaps
+\SI{5}{\micro\second}; a Node \fname{nextTick} drains the
+microtask queue (superlinear in queue depth); a JVM thread
+context switch costs $\sim$\SI{15}{\micro\second}.
+
+Whether the dispatcher cost is paid \emph{per chunk} or
+\emph{per recv batch} is the choice that determines per-chunk
+amplification. None of the servers in our sample except Kestrel
+pay it per recv-batch by default.
+
+Figure~\ref{fig:arch-three-classes} sketches the three structural
+classes as data-flow diagrams from kernel \texttt{recv()} to
+application handler.
+
+\begin{figure*}[t]
+  \centering
+  \begin{tikzpicture}[
+    node distance=4mm and 6mm,
+    every node/.style={font=\footnotesize},
+    box/.style={draw, rounded corners=2pt, minimum height=6mm,
+                minimum width=22mm, align=center, font=\footnotesize},
+    parser/.style={box, fill=blue!12},
+    dispatcher/.style={box, fill=orange!18},
+    handler/.style={box, fill=green!18},
+    cost/.style={font=\scriptsize\itshape, text=red!60!black, align=left},
+    arr/.style={-{Latex[length=2mm,width=1.5mm]}, thick},
+    chunkarr/.style={arr, draw=red!70!black},
+    batcharr/.style={arr, draw=green!50!black, line width=0.9pt},
+  ]
+
+  % PANEL A: per-chunk (most servers)
+  \begin{scope}[local bounding box=panelA]
+    \node[parser]    (kA)  {kernel \texttt{recv()}};
+    \node[parser,    below=of kA]   (pA1) {chunked decoder};
+    \node[dispatcher,below=of pA1]  (dA)  {dispatcher\\(per-chunk)};
+    \node[handler,   below=of dA]   (hA)  {application\\handler};
+    \draw[arr] (kA) -- (pA1);
+    \draw[chunkarr] (pA1) edge[bend left=45]   node[cost,right] {chunk 1} (dA);
+    \draw[chunkarr] (pA1) edge[bend right=10]  node[cost,left]  {chunk 2} (dA);
+    \draw[chunkarr] (pA1) edge[bend right=45]  node[cost,left]  {chunk N} (dA);
+    \draw[chunkarr] (dA) -- node[cost,right] {N events: \\ N$\times$ task-switch} (hA);
+    \node[above=2mm of kA,font=\small\bfseries] {(a) per-chunk};
+  \end{scope}
+
+  % PANEL B: batches-correctly (Kestrel)
+  \begin{scope}[local bounding box=panelB, xshift=58mm]
+    \node[parser]    (kB)  {kernel \texttt{recv()}};
+    \node[parser,    below=of kB]   (pB1) {chunked decoder};
+    \node[parser,    below=of pB1]  (pB2) {\fname{Pipe} ring buffer};
+    \node[dispatcher,below=of pB2]  (dB)  {dispatcher\\(per-recv)};
+    \node[handler,   below=of dB]   (hB)  {application\\handler};
+    \draw[arr] (kB) -- (pB1);
+    \draw[chunkarr] (pB1) edge[loop right, looseness=3.5, min distance=8mm] node[cost,right] {N$\times$ in pump} (pB1);
+    \draw[arr] (pB1) -- (pB2);
+    \draw[batcharr] (pB2) -- node[cost,right] {1 event: \\ 1$\times$ task-switch} (dB);
+    \draw[arr] (dB) -- (hB);
+    \node[above=2mm of kB,font=\small\bfseries] {(b) batches-correctly};
+  \end{scope}
+
+  % PANEL C: quadratic
+  \begin{scope}[local bounding box=panelC, xshift=116mm]
+    \node[parser]    (kC)  {kernel \texttt{recv()}};
+    \node[parser,    below=of kC]   (pC1) {chunked decoder};
+    \node[dispatcher,below=of pC1]  (dC)  {dispatcher\\(per-chunk)};
+    \node[box, fill=red!18, below=of dC]   (qC)  {accumulator\\(grows with N)};
+    \node[handler,   below=of qC]   (hC)  {application\\handler};
+    \draw[arr] (kC) -- (pC1);
+    \draw[chunkarr] (pC1) edge[bend left=45]  node[cost,right] {chunk 1} (dC);
+    \draw[chunkarr] (pC1) edge[bend right=10] node[cost,left]  {chunk 2} (dC);
+    \draw[chunkarr] (pC1) edge[bend right=45] node[cost,left]  {chunk N} (dC);
+    \draw[chunkarr] (dC) -- node[cost,right] {N events $\times$ \\ O(M) walk} (qC);
+    \draw[arr] (qC) -- (hC);
+    \node[above=2mm of kC,font=\small\bfseries] {(c) quadratic};
+  \end{scope}
+
+  \end{tikzpicture}
+
+  \caption{Three structural classes observed across 27 servers.
+  (a)~\emph{per-chunk}: the chunked decoder dispatches one
+  application receive event per chunk; the cost is N task-switches.
+  (b)~\emph{batches-correctly} (Kestrel /
+  \fname{System.IO.Pipelines}): the decoder loop pumps all
+  chunks present in the recv buffer into a Pipe ring buffer and
+  triggers one application receive event per recv batch; the
+  per-chunk cost stays inside the pump and never crosses the
+  \fname{async}/\fname{await} boundary.
+  (c)~\emph{quadratic}: each per-chunk dispatch additionally
+  walks an accumulator whose size grows with N, giving
+  $\Theta(N^2)$ total work. Both Node's
+  \fname{maybeReadMore}-driven microtask queue and Bandit's
+  \fname{erlang:iolist\_size/1} walk fit this pattern via
+  different concrete mechanisms.}
+  \label{fig:arch-three-classes}
+\end{figure*}
+
+\subsection{Three cost mechanisms}
+\label{sec:rc-mechanisms}
+
+We observe three distinct cost mechanisms across the 22
+VULNERABLE-PER-CHUNK + 4 QUADRATIC servers.
+
+\paragraph{Mechanism A: dispatcher-bound (most servers).}
+The parser is fast; the cost is the per-chunk dispatch event.
+Representative example: uvicorn + h11. Profile shows
+$\sim$\SI{5}{\micro\second}/chunk, of which the h11 state-machine
+step is $\sim$\SI{1}{\micro\second} and the
+\fname{message\_event.set()} -> \fname{await receive()} round-trip
+plus the ensuing async task switch is $\sim$\SI{4}{\micro\second}.
+
+Most of our sample sits in this regime. Optimizing the parser
+gives essentially no improvement; optimizing the dispatcher (by
+batching) gives \emph{all} of the improvement.
+
+\paragraph{Mechanism B: thread-handoff (Tomcat).}
+On top of mechanism A, the thread-per-connection Servlet model
+forces a Tomcat NIO Poller -> SynchronizedQueue -> worker thread
+handoff per chunk. The
+\fname{pthread\_cond\_signal} / \fname{ObjectMonitor::wait} traffic
+visible in \fname{async-profiler} adds $\sim$\SI{14}{\micro\second}
+on top of the underlying \fname{ChunkedInputFilter.parseChunkHeader}
+cost. Total $\sim$\SI{21}{\micro\second}/chunk -- the worst
+linear cell in our sample at $N{=}\num{250000}$ once nginx-as-origin
+is excluded.
+
+\paragraph{Mechanism C: superlinear accumulator (Node, Bandit).}
+Some servers carry per-chunk \emph{state} that itself grows with
+the number of chunks already received. When the per-chunk
+operation has to inspect that state, the total work becomes
+quadratic.
+
+\begin{itemize}
+  \item Node: the \fname{maybeReadMore} -> \fname{process.nextTick}
+    chain schedules a callback per chunk. Each scheduled callback
+    drains some prefix of the microtask queue. The queue grows
+    with the number of pushed chunks; the drain work per scheduled
+    callback grows similarly; total work is
+    $\Theta(N^2)$.
+  \item Bandit: \fname{do\_read\_chunk!/4} calls
+    \fname{erlang:iolist\_size/1} on the accumulating iolist on
+    every chunk to update progress; the iolist walk is $\Theta(M)$
+    where $M$ is the already-accumulated body, summed over $N$
+    chunks gives $\Theta(N^2)$. (Adjacent prior art:
+    CVE-2026-7790~\cite{cve_2026_7790_cowlib} in
+    \fwid{cowlib}'s chunk-size hex parser is a different
+    quadratic in the same library family.)
+\end{itemize}
+
+These two examples are mechanistically unrelated (JavaScript
+microtask queue vs Erlang iolist walk) but produce the same
+asymptotic shape, indicating that the "per-chunk operation
+walks accumulated state" anti-pattern is not unique to one
+runtime.
+
+\subsection{Why Kestrel avoids both mechanisms}
+\label{sec:rc-kestrel}
+
+Kestrel's \fname{Http1ChunkedEncodingMessageBody.PumpAsync} drains
+the entire socket-readable buffer into a \fname{System.IO.Pipelines}
+\fname{Pipe} in a single synchronous loop. The loop transitions
+through \fname{ParseChunkedPrefix} and \fname{ReadChunkedData}
+states for every chunk in the buffer, writes the data bytes into
+the \fname{Pipe} (chunk metadata is stripped), and only after the
+buffer is fully drained does the pump call \fname{FlushAsync()}.
+The application's \fname{PipeReader.ReadAsync} resumes
+\emph{once} per pump, with a single \fname{ReadResult} containing
+all decoded chunks' bytes coalesced.
+
+This is mechanism-A elimination by construction. There is no
+per-chunk dispatch event because the dispatcher (the
+\fname{async/await} state machine of the handler) is only ticked
+once per pump. There is no per-chunk accumulator walk because the
+\fname{Pipe}'s ring buffer is amortized constant-cost-per-byte.
+The result is a per-chunk cost (Section~\ref{sec:synth-classes})
+dominated entirely by the synchronous parser loop, with no
+runtime tax on top.
+
+The Pipelines design is publicly documented and predates the
+security framing of this bug class. It is, to our knowledge, the
+only production HTTP server in widespread use that adopts this
+pattern as a default.
+
+\subsection{Why batching is spec-compliant}
+\label{sec:rc-spec}
+
+We address a possible counterargument: that delivering one
+application event per chunk is required by the relevant
+specifications.
+
+\begin{itemize}
+  \item RFC 9112~\cite{rfc9112} defines the wire format. It
+    does not specify any application-API granularity.
+  \item The ASGI specification~\cite{asgi_spec} says a server
+    "may send a single \fname{http.request} event with the entire
+    body" or "may send the body as multiple
+    \fname{http.request} events". The spec explicitly permits
+    coalescing.
+  \item PEP 3333 (WSGI)~\cite{wsgi_pep3333} defines
+    \fname{environ['wsgi.input']} as a file-like object read by
+    the application; the server is free to back it with any
+    buffer it likes (Tempfile in Puma; \fname{BytesIO} in
+    waitress).
+  \item Java's Servlet API exposes \fname{getInputStream()};
+    chunking is invisible to the handler.
+  \item Node's \fname{IncomingMessage} extends
+    \fname{Readable}, which is documented as preserving chunk
+    boundaries when called in \fname{Buffer} mode, but the docs
+    do not prohibit coalescing inside \fname{push()}.
+\end{itemize}
+
+In every case the spec permits the batching that Kestrel does.
+The choice not to batch is implementation-internal, not
+spec-mandated.

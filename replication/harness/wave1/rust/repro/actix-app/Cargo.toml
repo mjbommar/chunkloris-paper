@@ -1,0 +1,14 @@
+[package]
+name = "actix-srv"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+actix-web = "4"
+bytes = "1"
+
+[profile.release]
+opt-level = 3
+lto = "thin"
+codegen-units = 1
+debug = 1

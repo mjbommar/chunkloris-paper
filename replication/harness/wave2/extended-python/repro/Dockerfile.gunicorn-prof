@@ -1,0 +1,7 @@
+FROM python:3.12-slim
+WORKDIR /app
+RUN pip install --no-cache-dir 'gunicorn==23.0.0'
+COPY wsgi_app.py /app/wsgi_app.py
+COPY run_gunicorn_prof.py /app/run_gunicorn_prof.py
+EXPOSE 8000
+CMD ["python", "/app/run_gunicorn_prof.py"]

@@ -1,0 +1,112 @@
+% !TEX program = lualatex
+% Build via:  make -C paper/   (or)  latexmk -lualatex main
+% arXiv: compiles with lualatex (fontspec/unicode-math); main.bbl is bundled
+% so the bibliography builds without biber. No -shell-escape required.
+\documentclass[11pt,letterpaper]{article}
+
+%--- core packages ---------------------------------------------------
+\usepackage[a4paper,margin=1in]{geometry}
+\usepackage{fontspec}
+\usepackage{unicode-math}
+\usepackage{microtype}
+\usepackage[english]{babel}
+\usepackage[final]{hyperref}
+\usepackage{xcolor}
+\usepackage{xurl}
+\usepackage{footnote}
+
+%--- tables, figures, code ------------------------------------------
+\usepackage{tabularx}
+\usepackage{booktabs}
+\usepackage{multirow}
+\usepackage{graphicx}
+\usepackage{caption}
+\usepackage{subcaption}
+\usepackage{float}
+
+%--- math, graphs, diagrams -----------------------------------------
+% unicode-math (already loaded above) provides all amssymb glyphs natively;
+% loading amssymb would conflict on \eth and friends.
+\usepackage{amsmath}
+\usepackage{siunitx}
+\sisetup{detect-all=true,group-separator={,}}
+\usepackage{xspace}
+\usepackage{tikz}
+\usepackage{pgfplots}
+\pgfplotsset{compat=1.18}
+\usetikzlibrary{positioning,arrows.meta,calc,fit,backgrounds,shapes.geometric,decorations.pathreplacing}
+
+%--- bibliography ---------------------------------------------------
+\usepackage[backend=biber,style=numeric,maxbibnames=99,sorting=none]{biblatex}
+\addbibresource{bib/references.bib}
+
+%--- fonts ---------------------------------------------------------
+\setmainfont{TeX Gyre Termes}
+\setsansfont{TeX Gyre Heros}
+\setmonofont{TeX Gyre Cursor}
+\setmathfont{TeX Gyre Termes Math}
+
+%--- metadata ------------------------------------------------------
+\title{\textbf{The Per-Chunk Tax}\\\large A cross-ecosystem survey of HTTP/1.1 chunked-transfer-encoding amplification in production servers}
+\author{Michael J. Bommarito II}
+\date{\today}
+
+\hypersetup{
+  colorlinks=true,
+  linkcolor=blue!50!black,
+  urlcolor=blue!50!black,
+  citecolor=blue!50!black,
+}
+
+%--- macros --------------------------------------------------------
+\newcommand{\fwid}[1]{\texttt{#1}}
+\newcommand{\fname}[1]{\texttt{#1}}
+\newcommand{\us}{\,\textmu s}
+
+%====================================================================
+\begin{document}
+\maketitle
+
+\begin{abstract}
+\input{sections/00-abstract}
+\end{abstract}
+
+\section{Introduction}\label{sec:intro}
+\input{sections/01-introduction}
+
+\section{Background}\label{sec:background}
+\input{sections/02-background}
+
+\section{Methodology}\label{sec:methodology}
+\input{sections/03-methodology}
+
+\section{Per-framework deep dives}\label{sec:perframework}
+\input{sections/04-perframework}
+
+\section{Cross-framework synthesis}\label{sec:synthesis}
+\input{sections/05-synthesis}
+
+\section{Root cause analysis}\label{sec:rootcause}
+\input{sections/06-rootcause}
+
+\section{Threat model}\label{sec:threat}
+\input{sections/07-threat}
+
+\section{Mitigation taxonomy}\label{sec:mitigation}
+\input{sections/08-mitigation}
+
+\section{Disclosure and ecosystem response}\label{sec:disclosure}
+\input{sections/09-disclosure}
+
+\section{Recommendations}\label{sec:recommendations}
+\input{sections/10-recommendations}
+
+\section{Limitations and future work}\label{sec:future}
+\input{sections/11-future}
+
+\section{Conclusion}\label{sec:conclusion}
+\input{sections/12-conclusion}
+
+\printbibliography
+
+\end{document}

@@ -1,0 +1,112 @@
+\subsection{Test harness}
+\label{sec:method-harness}
+
+Every server is built as a Docker image pinning the exact version
+under test and exposing port 8000 on a Docker bridge network. The
+container is constrained to a single CPU
+(\texttt{--cpus=1}). The application handler implements the
+minimum needed for a meaningful measurement: a \texttt{GET /health}
+returning \texttt{200 OK} with body \texttt{\{"ok":true\}} and a
+\texttt{POST /upload} that fully drains the request body and
+returns \texttt{200 OK} with body \texttt{\{"len":N\}}. No logging
+middleware, no metrics, no compression, no body-size limit is
+configured beyond the framework default.
+
+A separate \emph{prober} container, on the same Docker bridge
+network, reaches the server by its DNS alias and issues the
+controlled HTTP requests. The prober is a single Python script that
+opens a raw \texttt{asyncio} TCP connection, writes the request
+headers, then writes the body as chunked-TE chunks per the test
+mode (see below), and reads the response. Wall time is measured
+client-side from the moment the prober writes the first byte of
+the body to the moment the server's response is received.
+
+\subsection{Standardized payload}
+\label{sec:method-payload}
+
+For each measurement cell we send a body of $N$ bytes, encoded as
+$N$ chunks of one byte each:
+\begin{verbatim}
+POST /upload HTTP/1.1
+Host: x
+Transfer-Encoding: chunked
+Content-Type: application/octet-stream
+Connection: close
+
+1\r\nA\r\n1\r\nA\r\n... (N times) ...0\r\n\r\n
+\end{verbatim}
+Each chunk is \texttt{1$\backslash$r$\backslash$nA$\backslash$r$\backslash$n}
+(6 wire bytes per data byte), so the bytes on the wire are roughly
+$6N$ plus a fixed header overhead. We measure at
+$N \in \{50000, 100000, 250000\}$, with a few servers extended to
+$N{=}1000000$ for the log-log scaling charts in
+Figure~\ref{fig:scaling}.
+
+This payload is RFC-compliant. It is a degenerate-but-legal
+chunked-TE encoding; no protocol-level violation is required.
+
+\subsection{Two probe modes}
+\label{sec:method-modes}
+
+The TCP coalescing behavior on the server depends on how the prober
+delivers bytes to the kernel. We measure both extremes:
+
+\paragraph{Mode A: bridge-coalesced.}
+The prober writes all chunks back-to-back to its
+\texttt{StreamWriter}; \texttt{TCP\_NODELAY} is \emph{not} enabled.
+The kernel coalesces the writes into MSS-sized TCP segments. The
+server's \texttt{recv()} buffer receives many chunks per syscall
+return. Empirically, on our Docker bridge this is $\sim$8--16
+wire chunks per \texttt{data\_received} callback.
+
+\paragraph{Mode B: paced \SI{100}{\micro\second}.}
+Between every chunk write the prober busy-waits for
+\SI{100}{\micro\second} (a CPU spin, not \texttt{asyncio.sleep};
+the latter yields to the event loop and is too coarse).
+\texttt{TCP\_NODELAY} is enabled. Each chunk leaves the prober as
+its own TCP segment with $\geq$\SI{100}{\micro\second} between
+sends; the server typically returns from each \texttt{recv()} with
+one chunk's worth of bytes.
+
+Mode A and Mode B bound the realistic spectrum of network
+conditions: Mode A approximates kubernetes pod-to-pod traffic,
+Mode B approximates slow-drip attacker pacing or trans-WAN bursts.
+
+\subsection{Profile collection}
+\label{sec:method-profile}
+
+For each server we sample its CPU profile during the worst Mode B
+cell, using whichever profiler the language ecosystem provides:
+
+\begin{itemize}
+  \item Python: \texttt{cProfile} with \texttt{sort\_stats('cumulative')},
+    top 30.
+  \item Go: \texttt{net/http/pprof} exposed on a side port, sampled
+    via \texttt{go tool pprof -top}.
+  \item Rust: \texttt{perf record -F 999}, converted to
+    \texttt{perf report --stdio} (\texttt{kernel.perf\_event\_paranoid}
+    blocked profiling on some Rust runs; we fall back to
+    source-level analysis for those).
+  \item Node: \texttt{node --prof}, then
+    \texttt{node --prof-process} top 100.
+  \item JVM: \texttt{async-profiler} agent attached, itimer
+    sampling.
+  \item BEAM: \texttt{:eprof} posted to a \texttt{/profile\_upload}
+    endpoint inside the same process.
+  \item .NET: \texttt{dotnet-trace} via a sidecar container
+    sharing the target's PID namespace.
+\end{itemize}
+
+\subsection{Reproducibility}
+\label{sec:method-repro}
+
+Every test harness is checked into the project tree under
+\texttt{wave\{1,2\}/<ecosystem>/repro/}, including the
+Dockerfile(s), the application source, the prober Python script,
+the per-cell run logs, and the saved profile artifacts. The
+top-level rebuild driver,
+\fname{scripts/render\_all.sh}, regenerates every figure from
+\texttt{data/wave*.json} via the chart-rendering scripts and
+re-runs the LuaLaTeX build of this paper. Anyone with Docker plus
+\fname{uv} plus \fname{lualatex} can reproduce every number in
+this paper from the published harness.

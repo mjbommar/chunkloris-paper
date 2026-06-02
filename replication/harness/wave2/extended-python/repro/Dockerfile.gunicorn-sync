@@ -1,0 +1,6 @@
+FROM python:3.12-slim
+WORKDIR /app
+RUN pip install --no-cache-dir 'gunicorn==23.0.0'
+COPY wsgi_app.py /app/wsgi_app.py
+EXPOSE 8000
+CMD ["gunicorn", "-w", "1", "-k", "sync", "-b", "0.0.0.0:8000", "--log-level", "warning", "wsgi_app:app"]

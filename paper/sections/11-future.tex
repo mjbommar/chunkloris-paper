@@ -1,0 +1,89 @@
+\subsection{Limitations}
+\label{sec:future-limit}
+
+\paragraph{Network conditions.}
+Mode A (bridge-coalesced) and Mode B (paced \SI{100}{\micro\second})
+bound the realistic spectrum but do not cover every deployment.
+Particularly: cloud LB-to-pod paths sometimes apply per-flow
+shapers that approximate Mode B even without an explicit attacker
+pacing strategy. We have not measured those configurations
+directly.
+
+\paragraph{Single-CPU constraint.}
+Every server runs in a \texttt{--cpus=1} container. This is the
+single-CPU worst case. Multi-CPU servers fan out work across cores,
+but the per-connection cost is still serial per the affected
+worker, so multi-CPU does not change the per-connection ratio --
+it changes how many concurrent attackers are needed to saturate
+the deployment.
+
+\paragraph{TLS overhead not measured.}
+Every test is plain HTTP. TLS adds AEAD framing on top of TCP;
+TLS records buffer multiple bytes by their nature, which could
+incidentally aggregate chunked-TE chunks at the record boundary.
+We have not measured the magnitude.
+
+\paragraph{HTTP/2 and HTTP/3 not measured (Wave 1+2).}
+The 27 servers in our sample were measured under HTTP/1.1
+chunked-TE only. HTTP/2 uses DATA frames with explicit length
+fields; HTTP/3 uses QUIC streams with similar framing. Whether
+the per-chunk amplification class transfers, mitigates, or
+manifests differently under those protocols is unknown.
+
+\paragraph{Cold start vs warm path.}
+JVM tests in particular include some JIT warm-up cost in the
+first few requests. We report the warm-path numbers (request
+2--N of each cell); cold-path measurements would change the
+absolute timings but not the asymptotic shape.
+
+\paragraph{Production traffic distribution.}
+The probability that real-world traffic includes per-chunk
+amplification attempts is unmeasured. We have not deployed
+honeypots or instrumented production servers.
+
+\subsection{Future work}
+\label{sec:future-work}
+
+\paragraph{Wave 3: HTTP/2, HTTP/3, WebSocket, gRPC.}
+We plan to measure the same 27 servers under HTTP/2 multiplexed
+DATA frames, HTTP/3 over QUIC streams, WebSocket per-frame
+amplification, and gRPC streaming. Preliminary expectation: the
+class transfers to all four, with HTTP/2 \emph{worsening} the
+per-connection cost via stream multiplexing and HTTP/3 partially
+mitigating via QUIC's flow control.
+
+\paragraph{Multipart per-part amplification.}
+\fwid{multipart/form-data} is structurally similar: each part has
+a header section delivered to the parser callbacks per chunk.
+Companion work in
+\texttt{findings/starlette/2026-05/STARLETTE\_FORMPARSER\_QUADRATIC/}
+(retracted as a security finding after patch verification but the
+underlying parser shape is the same) suggests the class transfers.
+
+\paragraph{Production telemetry.}
+We have no data on what fraction of production HTTP traffic
+includes chunked-TE bodies with small chunks. A honeypot study or
+a partnership with a high-traffic CDN would let us estimate the
+real-world prevalence of the attack pattern.
+
+\paragraph{Frontend buffering measurement at CDNs.}
+Cloudflare, Fastly, Akamai, AWS ALB, and GCP HTTP(S) LB each have
+proprietary chunked-body handling. None publicly document whether
+they aggregate before forwarding to origin. A measurement campaign
+across these would significantly improve the operational
+recommendation in Section~\ref{sec:mit-summary}.
+
+\paragraph{Formal model of batching correctness.}
+We have argued informally (Section~\ref{sec:rc-spec}) that
+batching is spec-compliant under RFC 9112 and ASGI / WSGI /
+Servlet. A formal model -- expressed in TLA+ or a similar
+specification language -- would make the argument bulletproof
+and would let server maintainers verify their own batching
+implementations.
+
+\paragraph{Detection signatures.}
+Building an open-source IDS / WAF signature for the attack
+pattern is straightforward (Section~\ref{sec:tm-detect}) but
+requires balancing false positives against attacker evasion.
+A reference Snort / Suricata rule set, validated on our
+reproducer harness, would be a useful publishable artifact.

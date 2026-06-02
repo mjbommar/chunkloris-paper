@@ -1,0 +1,5 @@
+FROM httpd:2.4
+COPY httpd.conf /usr/local/apache2/conf/httpd.conf
+COPY upload.lua /usr/local/apache2/htdocs/upload.lua
+COPY health.lua /usr/local/apache2/htdocs/health.lua
+EXPOSE 8000

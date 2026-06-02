@@ -1,0 +1,10 @@
+FROM python:3.12-slim
+WORKDIR /app
+RUN pip install --no-cache-dir 'uvicorn==0.32.1' 'starlette' 'h11'
+COPY app.py /app/app.py
+COPY run_uvicorn.py /app/run_uvicorn.py
+EXPOSE 8000
+# Profile + dump stats on container stop. We trap SIGTERM via Python's
+# default signal handler -> KeyboardInterrupt -> uvicorn shuts down,
+# cProfile -o /dev/stdout finalizes.
+CMD ["python", "-m", "cProfile", "-o", "/tmp/server.prof", "run_uvicorn.py"]

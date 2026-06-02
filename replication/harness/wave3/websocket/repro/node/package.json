@@ -1,0 +1,8 @@
+{
+  "name": "ws-server",
+  "version": "0.0.1",
+  "private": true,
+  "dependencies": {
+    "ws": "^8.18.0"
+  }
+}

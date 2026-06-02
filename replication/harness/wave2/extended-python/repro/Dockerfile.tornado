@@ -1,0 +1,6 @@
+FROM python:3.12-slim
+WORKDIR /app
+RUN pip install --no-cache-dir 'tornado==6.4.2'
+COPY tornado_app.py /app/tornado_app.py
+EXPOSE 8000
+CMD ["python", "/app/tornado_app.py"]

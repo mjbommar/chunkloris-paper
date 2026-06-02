@@ -1,0 +1,87 @@
+HTTP/1.1 chunked transfer encoding~\cite{rfc9112} is the standard
+mechanism by which a client transmits a request body whose length is
+unknown when the request line is sent. The specification defines the
+wire format but not the granularity at which a parser must deliver
+decoded body bytes to the application handler. We measure that
+delivery granularity, end to end and under controlled network
+conditions, across \textbf{27 production HTTP servers} spanning
+\textbf{7 language ecosystems} (Python, Go, Rust, JVM, Node.js,
+BEAM, Ruby) and three C servers (\fwid{nginx}, Apache \fwid{httpd},
+\fwid{HAProxy}).
+
+We find that \textbf{exactly one server} in our sample
+(Microsoft's Kestrel on ASP.NET Core, via the
+\fname{System.IO.Pipelines} substrate)
+\emph{moves the per-chunk cost off the
+\fname{async}/\fname{await} scheduling boundary} on
+\textbf{HTTP/1.1 only}: its
+\fname{Http1ChunkedEncodingMessageBody.PumpAsync} drains the
+socket-readable buffer into a Pipe, loops through every chunk
+header present, then wakes the application handler with a single
+coalesced \fname{PipeReader.ReadAsync} result. The HTTP/2 path of
+the same server (Wave 3) has no pump-equivalent and falls back to
+per-DATA-frame dispatch like every other HTTP/2 implementation
+we tested. Kestrel still pays a per-chunk parsing cost inside the
+H/1 pump (\SI{3.6}{\micro\second}/chunk steady-state), but
+eliminates the per-chunk task switch that dominates the other
+servers' cost.
+Every other server we measure dispatches one parser callback per
+chunk and emits one application-receive event per chunk; this
+costs between \SI{2.1}{\micro\second} (uvicorn + httptools) and
+\SI{114}{\micro\second} (nginx as origin) of single-core CPU per
+chunk under our standardized probe.
+
+Four servers exhibit \textbf{superlinear} wall-time scaling
+(measured exponents 1.0--2.0 in our $N$ range; mechanistic
+arguments support an asymptotic $\Theta(N^2)$): Node's built-in
+\fwid{http.Server} (and \fwid{express} and \fwid{fastify} atop it)
+via the \fname{process.nextTick} cost of the Readable substrate,
+and Elixir's \fwid{bandit} via an \fname{erlang:iolist\_size}/iolist
+walk per chunk in \fname{do\_read\_chunk!/4}. A
+\SI{1.5}{\mebi\byte} attacker request consumes \emph{measured}
+282\,s of Node \fwid{http.Server} CPU at $N{=}\num{250000}$
+chunks, and 42\,s of bandit CPU; the cited \fwid{express}
+N=\num{250000} cell is extrapolated from a quadratic fit to
+smaller cells.
+
+The "deploy behind nginx" mitigation widely advised in framework
+documentation is empirically confirmed. With default
+\fname{proxy\_request\_buffering~on}, an
+upstream-instrumented end-to-end probe (prober
+\(\to\) nginx-proxy \(\to\) instrumented Python upstream) shows
+the upstream receives \emph{exactly one}
+\fname{Content-Length}-framed request with no
+\fname{Transfer-Encoding} header and \emph{one} \fname{recv()}
+covering both headers and the entire body. With
+\fname{proxy\_request\_buffering~off} the same probe forwards
+the chunked stream unchanged, with the upstream seeing multiple
+\fname{recv()}s and a \fname{Transfer-Encoding: chunked} header.
+Apache \fname{mod\_proxy\_http} is documented to behave the
+same way (not directly measured). \fwid{HAProxy} does
+\emph{not} aggregate: it streams by default, and
+\fname{http-buffer-request} only waits for one buffer's worth,
+not a per-chunk accumulator. Direct-exposed servers,
+HAProxy-fronted deployments, and any deployment with buffering
+disabled inherit the full per-chunk cost.
+
+A Wave 3 measurement set extends the survey to HTTP/2 DATA frames
+and WebSocket text frames. Every HTTP/2 server in our sample
+(6 servers including Kestrel-h2, hypercorn-h2, node-h2, vertx-h2,
+go-h2c, rust-hyper-h2) exhibits the same per-frame amplification
+shape as HTTP/1 chunked-TE, at 4--10 \(\mu\)s/frame; HTTP/2's
+flow control bounds bytes but not frames. WebSocket is the only
+protocol in which most ecosystems already batch correctly
+(node-ws, gorilla, rust-tungstenite, Kestrel-WS at
+0.1--0.7 \(\mu\)s/frame); Python ASGI's WebSocket implementations
+(uvicorn + websockets / wsproto) are the at-risk outlier.
+
+We characterize the root cause as a parser/dispatcher boundary
+design choice rather than a spec violation, taxonomize the
+mitigations available today, and report the responses of upstream
+maintainers including the closure of hyper issue
+\#4008~\cite{hyper_4008} ("Provide built-in chunked request limits
+and CPU-safe streaming helpers") as \fwid{not\_planned} with the
+labelled state \fwid{S-waiting-on-author}. We argue that opt-in
+aggregation primitives modeled on Kestrel's Pipelines pump should
+be exposed by every event-loop HTTP server, and that the bug class
+warrants a coordinated disclosure to the affected ecosystems.

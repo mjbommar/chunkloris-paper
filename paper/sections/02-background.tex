@@ -1,0 +1,107 @@
+\subsection{HTTP/1.1 chunked transfer encoding}
+\label{sec:bg-chunked}
+
+RFC 9112 \S 7.1 \cite{rfc9112} specifies chunked transfer encoding
+as a sequence of length-prefixed chunks. Each chunk has the form
+\texttt{<hex-size>;<extensions>$\backslash$r$\backslash$n<data>$\backslash$r$\backslash$n}
+where \texttt{<extensions>} is optional and a chunk of size
+\texttt{0} terminates the message. A trailer section MAY follow the
+zero chunk before the final \texttt{$\backslash$r$\backslash$n}.
+
+The encoding was introduced in RFC 2616 (1999) to support sending
+content whose length is not known when the request line is sent.
+It is used by streaming clients (cURL with
+\texttt{--data-binary @-}, every modern browser forwarding a
+streamed body, every LLM SDK streaming a prompt) and by the upload
+paths of essentially every public-facing web framework.
+
+The spec defines the \emph{wire} format but does \emph{not}
+constrain how a recipient should schedule decoded body bytes into
+application code. A recipient may legally:
+\begin{itemize}
+  \item Deliver each decoded chunk's bytes as a separate
+    application-receive event (\emph{per-chunk}; what most servers
+    in our sample do).
+  \item Coalesce all chunk bytes available in the current TCP
+    \texttt{recv()} buffer into one application-receive event
+    (\emph{per-recv}; what \fname{System.IO.Pipelines}/Kestrel does).
+  \item Fully buffer the entire body up to a configured cap before
+    invoking the handler (\emph{fully-buffered}; what Puma's
+    Tempfile path does at the handler boundary, but the
+    \emph{parser} still loops per chunk).
+\end{itemize}
+
+This choice is the load-bearing decision behind everything in this
+paper.
+
+\subsection{HTTP server concurrency models}
+\label{sec:bg-concurrency}
+
+The servers we measure span the major concurrency paradigms:
+
+\begin{description}
+  \item[Event loop, single-thread.] One OS thread, an event loop
+    (\texttt{epoll}/\texttt{kqueue}/\texttt{io\_uring}), and
+    cooperative tasks. Examples in our sample:
+    \fwid{uvicorn} on Python's \fwid{asyncio}, \fwid{hyper}/\fwid{axum}/\fwid{actix-web}
+    on Tokio, \fwid{node http.Server} on libuv, \fwid{Vert.x} on Netty,
+    \fwid{nginx}, \fwid{HAProxy}.
+  \item[Thread per connection.] A worker thread blocks on each
+    socket's body read. Examples: Apache \fwid{httpd} \texttt{mpm\_event}
+    (per-conn worker), Tomcat (Servlet model), \fwid{gunicorn} sync
+    workers, \fwid{waitress}, \fwid{unicorn}.
+  \item[N:M scheduler.] Many lightweight tasks (goroutines, fibers,
+    BEAM processes) are multiplexed onto fewer OS threads by the
+    runtime. Examples: Go \fwid{net/http} (goroutines), \fwid{Cowboy}
+    (BEAM processes), \fwid{Falcon} on Ruby (\fwid{async} fibers).
+  \item[Actor model.] Message-passing isolation per request.
+    Example: \fwid{actix-web} (Actix actor system on top of Tokio).
+\end{description}
+
+The per-chunk amplification class does \emph{not} discriminate among
+these paradigms. We find it in all four, with broadly comparable
+cost constants once normalized for runtime overhead.
+
+\subsection{TCP coalescing and the measurement two-mode dichotomy}
+\label{sec:bg-tcp}
+
+A naive measurement of "how slow is the chunked path" depends
+critically on whether wire chunks arrive at the server kernel
+\emph{one per packet} or \emph{batched many per packet}. Both
+scenarios are realistic:
+
+\begin{itemize}
+  \item In a kubernetes pod-to-pod call across a docker bridge, the
+    kernel will coalesce dozens to hundreds of small TCP segments
+    into one \texttt{recv()} of $\sim$\SI{4}{\kibi\byte}.
+  \item In a slow-drip / slow-loris-style attack, or behind a CDN
+    that does not aggregate, each chunk can land in its own
+    \texttt{recv()}.
+\end{itemize}
+
+The two regimes can differ by orders of magnitude on the same
+server. We therefore measure both, denoting them \emph{Mode A}
+(bridge-coalesced) and \emph{Mode B} (paced, each chunk in its
+own \texttt{recv()}); see Section~\ref{sec:methodology}.
+
+\subsection{Slow-loris lineage and CWE-407}
+\label{sec:bg-cwe}
+
+The attack pattern of "send small request fragments slowly to keep
+a server busy" goes back to Apache Killer / slow-loris and the RUDY
+family. The class is catalogued as CWE-407 (Inefficient Algorithmic
+Complexity)~\cite{cwe407}; recent ecosystem-relevant CVEs include
+CVE-2025-67725 (Tornado quadratic header
+coalescing)~\cite{cve_2025_67725_tornado}, CVE-2025-14550
+(Django ASGI repeated-header concatenation)~\cite{cve_2025_14550_django},
+CVE-2026-7790 (cowlib chunk-size hex
+amplification)~\cite{cve_2026_7790_cowlib}, CVE-2023-39326 (Go
+net/http chunk-extension cost cap)~\cite{cve_2023_39326_go}, and
+the older CVE-2014-0075 (Tomcat chunk-size integer
+overflow)~\cite{cve_2014_0075_tomcat}.
+
+Each of these CVEs targets a \emph{specific} cost in the
+chunked-TE pipeline (per-byte hex parsing, per-header coalescing,
+integer-overflow on chunk size). None targets the per-chunk
+application-dispatch cost we measure here. The bug class we
+characterize is the same family but a previously-unnamed shape.

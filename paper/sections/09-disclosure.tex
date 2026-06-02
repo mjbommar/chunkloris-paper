@@ -1,0 +1,107 @@
+\subsection{Disclosure approach}
+\label{sec:disc-approach}
+
+The bug class spans many independently-maintained projects across
+language ecosystems with no shared coordination forum. We propose
+the following sequencing:
+
+\begin{enumerate}
+  \item \emph{Day 0:} private notification to each affected upstream
+    maintainer via that project's security channel, with:
+    a per-server STATE.md, the standardized reproducer
+    (\fname{wave\{1,2\}/<ecosystem>/repro/}), the cProfile /
+    pprof / async-profiler trace from the worst Mode B cell, and a
+    cross-reference to this paper as the disclosure document.
+  \item \emph{Day 60:} coordination call (asynchronous, via OSV / OSSF
+    or per-maintainer email) to align on a fix-or-position
+    decision.
+  \item \emph{Day 90:} public disclosure of this paper, with
+    upstream advisories filed for any project that has issued a
+    fix or a security position by that date.
+\end{enumerate}
+
+The 90-day window is conservative for an amplification class with
+no obvious in-the-wild exploitation (we have not seen evidence of
+it being weaponized, though we have not actively searched
+attacker telemetry).
+
+\subsection{Predicted maintainer responses}
+\label{sec:disc-predict}
+
+We predict per-maintainer responses on the basis of public posture
+and prior CVE handling:
+
+\begin{description}
+  \item[\fwid{hyper}] (Rust): declined. hyper issue
+    \#4008~\cite{hyper_4008} is the explicit prior-art closure
+    of this class as \fname{not\_planned}; we expect a polite
+    re-affirmation pointing at
+    \fname{http\_body\_util::Limited} and the proposed
+    \fname{BodyExt::limit\_chunks(N)}.
+  \item[\fwid{uvicorn} / \fwid{hypercorn} / \fwid{daphne}] (Python):
+    likely receptive. Each is small in maintainer-bandwidth terms
+    but has shown willingness to accept performance-related PRs.
+    A batched-receive implementation could land in 2--3 months.
+  \item[\fwid{Vert.x}] (JVM): likely receptive. The
+    \fname{HttpObjectAggregator} primitive already exists; the
+    decision is which API to expose so applications can opt into
+    aggregation without breaking the streaming contract.
+  \item[\fwid{Spring Boot} / Tomcat:] likely declined as
+    server-side fix. Thread-per-connection plus the
+    \fname{Servlet getInputStream} contract make per-recv batching
+    invasive. Their security position will likely be "deploy
+    behind nginx" plus tuning thread-pool sizing.
+  \item[\fwid{node.js}]: unknown. The quadratic shape is a
+    stronger argument than the linear one. The fix would have to
+    land in \fname{lib/internal/streams/readable.js} and the
+    Readable-stream behavior change has compatibility risk; we
+    expect a long maintainer discussion rather than a quick patch.
+  \item[\fwid{express} / \fwid{fastify}]: defer to Node.js.
+  \item[\fwid{bandit}]: likely receptive. The quadratic is a
+    clear bug in
+    \fname{do\_read\_chunk!/4}; the fix is local and the project
+    has accepted similar performance fixes.
+  \item[\fwid{cowboy}]: likely receptive. The
+    \fname{cowlib} maintainer accepted CVE-2026-7790; the
+    per-chunk amplification is adjacent and the same author would
+    handle it.
+  \item[\fwid{nginx}, Apache, \fwid{HAProxy}]: unknown. These are
+    C servers with substantial engineering teams; their reactions
+    will depend on how the class is framed (security versus
+    performance) and on how many of their downstream users push
+    for the fix.
+  \item[\fwid{Kestrel}]: nothing to disclose; already mitigated
+    structurally. We notify Microsoft only as a courtesy to
+    confirm the Pipelines design intent and to ask whether the
+    pattern is documented as a security property.
+\end{description}
+
+\subsection{Coordination challenges}
+\label{sec:disc-coord}
+
+Cross-language coordinated disclosure has limited precedent. The
+closest analogs:
+
+\begin{itemize}
+  \item Heartbleed (2014): single library (OpenSSL), wide
+    downstream impact, coordinated via the OpenSSL team.
+  \item Log4Shell (2021): single library (log4j), ecosystem-wide
+    JVM impact, coordinated via Apache Software Foundation.
+  \item The HTTP smuggling papers (Black Hat 2019, 2020):
+    cross-vendor, coordinated via the researcher's pre-presentation
+    private notification to each vendor.
+\end{itemize}
+
+The HTTP smuggling precedent is the closest fit: a single
+researcher / small team notifies many vendors, each handles their
+own response independently, and the public talk consolidates the
+ecosystem picture. We follow that model.
+
+\subsection{Funding and timeline}
+\label{sec:disc-funding}
+
+This work is self-funded; we have no budget for paid maintainer
+coordination or for follow-up engineering with each project. We
+expect some upstream maintainers to take longer than 90 days to
+respond; in those cases we will publish their unanswered status
+in a follow-up addendum.

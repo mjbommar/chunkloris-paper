@@ -1,0 +1,43 @@
+We measured 27 production HTTP/1.1 servers across 7 language
+ecosystems plus three C servers for their handling of the
+RFC-compliant pathological input "$N$-byte body delivered as $N$
+one-byte chunked-TE chunks." Across the entire sample, one server
+(Microsoft's Kestrel via \fname{System.IO.Pipelines}) structurally
+defeats the per-chunk amplification class; 22 are linear-but-
+vulnerable with per-chunk costs spanning a factor of $\sim 50\times$;
+4 (Node's built-in \fwid{http.Server}, \fwid{express}, \fwid{fastify},
+Elixir's \fwid{bandit}) exhibit superlinear $\Theta(N^2)$ scaling
+that pins a single CPU core for minutes per \SI{1.5}{\mebi\byte}
+of attacker traffic.
+
+The root cause is a parser/dispatcher boundary design choice, not
+a spec violation. RFC 9112 fixes the wire format but is silent on
+application-API granularity; ASGI, WSGI, Servlet, and Node's
+\fname{Readable} all permit coalescing. The cost of \emph{not}
+coalescing is a per-chunk dispatch event whose constant varies by
+runtime: ASGI receive, goroutine wake, future poll,
+\fname{process.nextTick}, mailbox enqueue, fiber switch, thread
+context switch. The amplification class is not unique to any
+single runtime; we observe it in every concurrency model we
+measure.
+
+The "deploy behind nginx" mitigation widely advised in framework
+documentation is valid for nginx and Apache httpd
+(\fname{proxy\_request\_buffering on} / \fname{ProxyIOBufferSize}
+default), but is \emph{not} valid for HAProxy, which streams the
+body upstream by default. Direct-exposed application servers,
+HAProxy-fronted deployments, and any deployment with proxy
+buffering disabled inherit the full per-chunk cost.
+
+We argue that opt-in batching primitives modeled on Kestrel's
+Pipelines pump should be exposed by every event-loop HTTP server;
+that the bug class warrants a coordinated disclosure to the
+affected ecosystems; and that the operational advice "deploy
+behind nginx" deserves clearer documentation of its applicability
+and its limits.
+
+The reproducer harness, raw measurements, and figure-rendering
+scripts are published with this paper under the project at
+\texttt{projects/asgi-perchunk-survey/}. Anyone with Docker plus
+\fname{uv} plus \fname{lualatex} can reproduce every number in
+this paper from the supplied harness.

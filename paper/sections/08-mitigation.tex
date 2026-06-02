@@ -1,0 +1,204 @@
+\subsection{Taxonomy}
+\label{sec:mit-taxonomy}
+
+We taxonomize mitigations across four layers, from closest to the
+parser to closest to the wire. Table~\ref{tab:mitigations}
+summarizes coverage per layer; the prose below treats each
+layer's strengths and limits.
+
+\begin{table}[h]
+  \centering
+  \footnotesize
+  \caption{Mitigation taxonomy. \emph{Default-deployed} means the
+  mitigation is on without any operator action; \emph{available}
+  means an operator can enable it but does not by default;
+  \emph{absent} means no equivalent primitive exists in the
+  ecosystem.}
+  \label{tab:mitigations}
+  \begin{tabularx}{\linewidth}{@{}l X l l l@{}}
+    \toprule
+    Layer & Mechanism & Default-deployed & Available & Absent \\
+    \midrule
+    Server-side aggregation
+      & coalesce N chunk events into one handler delivery
+      & Kestrel (Pipelines)
+      & \fwid{HttpObjectAggregator} (Netty)
+      & all others \\
+    Application-side chunk limit
+      & per-request cap on chunk count
+      & \emph{none}
+      & \fname{BodyExt::limit\_chunks(N)} (hyper)
+      & all others \\
+    Application-side byte limit
+      & total body byte cap (\fname{Content-Length} or otherwise)
+      & most servers
+      & N/A
+      & N/A \\
+    Frontend buffering
+      & reverse proxy aggregates body before forwarding
+      & nginx (\fname{proxy\_request\_buffering on}), Apache
+        (\fname{mod\_proxy\_http})
+      & N/A
+      & HAProxy (streams by default) \\
+    Transport-layer rate limit
+      & per-IP packet/sec cap
+      & N/A (operator opt-in)
+      & \fname{iptables}, \fname{nftables}, BPF
+      & N/A \\
+    \bottomrule
+  \end{tabularx}
+\end{table}
+
+\subsection{Server-side aggregation}
+\label{sec:mit-server}
+
+The structural fix is to coalesce consecutive chunk events into a
+single application delivery, as Kestrel does (Section~\ref{sec:rc-kestrel}).
+Netty exposes the
+\fname{HttpObjectAggregator} pipeline handler precisely for this
+purpose~\cite{netty_aggregator}: it accumulates
+\fname{HttpContent} fragments up to a configured byte limit and
+fires a single \fname{FullHttpRequest} event downstream. The
+mechanism exists; what is missing in Vert.x, Spring Boot, and
+every Netty-derivative we tested is that the aggregator is
+\emph{not installed by default} because doing so would change the
+streaming semantics that the framework's public API contracts
+guarantee.
+
+In other words: the cost of correctness in this class is breaking
+the streaming contract by default. Frameworks that have made the
+opposite choice (Pipelines in Kestrel; full buffering in Puma's
+Tempfile handler boundary) closed the bug class at the price of
+that contract. Frameworks that preserve streaming pay the
+per-chunk dispatch cost for every chunk forever.
+
+We argue (Section~\ref{sec:recommendations}) that the right
+default for new frameworks is to aggregate up to a configurable
+threshold (e.g., \SI{64}{\kibi\byte} or
+\SI{100}{\milli\second} since last flush, whichever first), and
+expose streaming as an explicit opt-in.
+
+\subsection{Application-side chunk limit}
+\label{sec:mit-app}
+
+\fwid{hyper} closed issue \#4008~\cite{hyper_4008} as
+\fname{not\_planned} on 2026-01-12 with the explicit position that
+chunked-TE amplification is application responsibility, and pointed
+users at \fname{http\_body\_util::Limited} (for byte caps) and the
+proposed \fname{BodyExt::limit\_chunks(N)} helper (for chunk-count
+caps; not yet shipped in
+\fname{http\_body\_util}~\cite{hyper_4008}). No other server in
+our sample exposes an equivalent chunk-count cap. Application code
+in any other ecosystem that wants to defend against this attack
+must write its own middleware that counts chunks during body
+read.
+
+This is functional but not pleasant: every application has to
+reinvent the cap, and many will not. The hyper maintainer position
+is internally consistent (server-side aggregation breaks
+streaming; chunk caps are an app-level concern) but does not scale
+across an ecosystem where most application code is unaware of the
+issue.
+
+\subsection{Frontend buffering}
+\label{sec:mit-frontend}
+
+The most widely-given advice ("deploy behind nginx") turns out to
+be valid for nginx and Apache, not for HAProxy.
+
+\paragraph{nginx.}
+\fname{proxy\_request\_buffering on} is the default. With it
+enabled, nginx reads the entire decoded request body into
+\fname{client\_body\_buffer\_size} (default 8--16 KB; spills to
+disk via \fname{client\_body\_temp\_path} beyond that). Only
+after the body is fully received does nginx open the upstream
+connection and forward the body in a single \fname{Content-Length}
+request. The upstream sees one well-formed request, not a chunked
+stream. Per-chunk decoder cost is paid by nginx, not by the
+upstream.
+
+We verified this empirically: an instrumented Python upstream
+behind \fwid{nginx} 1.27-alpine (default \fname{proxy\_request\_buffering}
+\fname{on}) received an attacker chunked-TE body of $N{=}\num{50000}$
+one-byte chunks as a single 50\,165-byte \fname{recv()} carrying a
+\fname{Content-Length: 50000} header and no
+\fname{Transfer-Encoding} header. The same probe against the same
+upstream with \fname{proxy\_request\_buffering~off} was forwarded
+as the original chunked stream (five separate \fname{recv()}s, no
+\fname{Content-Length}, \fname{Transfer-Encoding: chunked}
+preserved). The full reproducer is at
+\texttt{wave2/c/nginx-as-proxy/} and the captured upstream logs
+at \texttt{wave2/c/nginx-as-proxy/logs/scenario-\{A,B\}-*.log}.
+
+For every Python, Node, Ruby, Java, or .NET application deployed
+behind a default nginx, this is full mitigation of the per-chunk
+amplification class for the upstream. Nginx itself still pays the
+cost (Section~\ref{sec:synth-matrix} shows nginx-as-origin
+costs $\sim$\SI{114}{\micro\second}/chunk -- the worst linear cell
+in our sample) but nginx is a hardened C server with well-tuned
+worker concurrency, so the impact is bounded.
+
+\paragraph{Apache httpd.}
+\fname{mod\_proxy\_http} behaves the same way:
+\fname{ProxyIOBufferSize} (default 8192) bounds per-request
+buffering. Upstream sees a coalesced body.
+
+\paragraph{HAProxy.}
+HAProxy streams by default. \fname{http-buffer-request} can be
+enabled but only waits for one buffer's worth of bytes
+(\fname{tune.bufsize}, default \SI{16}{\kibi\byte}), not a full
+per-chunk accumulator. Upstream servers behind HAProxy receive
+chunked-TE requests directly and inherit the per-chunk cost. We
+have not seen this clearly stated anywhere in the HAProxy
+documentation; operators relying on "HAProxy is in front of my
+app" as a mitigation are mistaken.
+
+\paragraph{Cloud frontends.}
+We have not measured Cloudflare, Fastly, AWS ALB, GCP HTTP(S) LB,
+or Akamai. Each of these CDNs and load balancers has its own
+defaults for chunked-body buffering. We flag this as future work
+(Section~\ref{sec:future}). Operators should empirically verify
+whether their frontend buffers chunks before assuming a mitigation
+is in place.
+
+\subsection{Transport-layer rate limiting}
+\label{sec:mit-transport}
+
+A coarser fallback: rate-limit incoming TCP packets per source IP
+or per connection. This is universally available (\fname{iptables},
+\fname{nftables}, eBPF, dedicated DDoS appliances) but expensive
+to operate correctly:
+
+\begin{itemize}
+  \item Slow legitimate uploads (cellular networks, satellite,
+    constrained IoT) will be caught by aggressive packet-rate
+    caps.
+  \item Per-IP rate limiting fails open under distributed attacks
+    (botnets, residential proxies).
+  \item Per-connection caps catch low-bandwidth slow-drip but
+    not high-bandwidth bursts.
+\end{itemize}
+
+We recommend transport-layer rate limiting only as a defense
+in depth, not as the primary mitigation.
+
+\subsection{Summary recommendation per deployment tier}
+\label{sec:mit-summary}
+
+\begin{description}
+  \item[Direct-exposed application server.] If you cannot deploy
+    a frontend, you must apply Server-side aggregation
+    (Kestrel only) or Application-side chunk limits (hyper, or
+    custom middleware everywhere else).
+  \item[Behind nginx or Apache (default config).] Mitigated for the
+    upstream. Verify
+    \fname{proxy\_request\_buffering on} (nginx) or
+    \fname{ProxyIOBufferSize} default (Apache).
+  \item[Behind HAProxy.] Not mitigated; you must apply
+    application-side caps or enable a body-buffering proxy in
+    front of HAProxy.
+  \item[Behind a CDN.] Verify with the CDN provider that
+    chunked-TE bodies are aggregated before being forwarded to
+    your origin. Most providers do not document this behavior
+    explicitly.
+\end{description}

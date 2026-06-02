@@ -1,0 +1,15 @@
+[package]
+name = "rust-hyper-h2"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+tokio = { version = "1", features = ["full"] }
+hyper = { version = "1.5", features = ["server", "http2"] }
+hyper-util = { version = "0.1", features = ["server", "http2", "tokio"] }
+http-body-util = "0.1"
+bytes = "1"
+
+[profile.release]
+opt-level = 3
+lto = "thin"

@@ -1,0 +1,12 @@
+FROM ruby:3.3-slim
+RUN apt-get update && apt-get install -y --no-install-recommends \
+        build-essential ca-certificates && rm -rf /var/lib/apt/lists/*
+WORKDIR /app
+# Falcon 0.49 pairs with rack 3.x and async-http 0.84.x in current
+# Ruby ecosystem; gem install will pull a coherent dep set.
+RUN gem install --no-document falcon:0.49.0 rack:3.1.7 stackprof:0.2.27
+COPY config.ru /app/config.ru
+EXPOSE 8000
+# --count 1 = single process; default fiber-per-request inside.
+# --bind tells Falcon to use plain HTTP/1.1 cleartext (not h2c TLS).
+CMD ["falcon", "serve", "--count", "1", "--bind", "http://0.0.0.0:8000", "--config", "/app/config.ru"]

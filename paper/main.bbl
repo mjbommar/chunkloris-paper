@@ -1,0 +1,330 @@
+% $ biblatex auxiliary file $
+% $ biblatex bbl format version 3.3 $
+% Do not modify the above lines!
+%
+% This is an auxiliary file used by the 'biblatex' package.
+% This file may safely be deleted. It will be recreated by
+% biber as required.
+%
+\begingroup
+\makeatletter
+\@ifundefined{ver@biblatex.sty}
+  {\@latex@error
+     {Missing 'biblatex' package}
+     {The bibliography requires the 'biblatex' package.}
+      \aftergroup\endinput}
+  {}
+\endgroup
+
+
+\refsection{0}
+  \datalist[entry]{none/global//global/global/global}
+    \entry{rfc9112}{misc}{}{}
+      \name{author}{3}{}{%
+        {{hash=a6155135a306bddfc30cc4f52d1924e6}{%
+           family={Fielding},
+           familyi={F\bibinitperiod},
+           given={R.},
+           giveni={R\bibinitperiod}}}%
+        {{hash=55ac868e62f6d4ea8f9f143c4c584739}{%
+           family={Nottingham},
+           familyi={N\bibinitperiod},
+           given={M.},
+           giveni={M\bibinitperiod}}}%
+        {{hash=225e8f62a72b900586837313fbf16715}{%
+           family={Reschke},
+           familyi={R\bibinitperiod},
+           given={J.},
+           giveni={J\bibinitperiod}}}%
+      }
+      \strng{namehash}{c041f6bbb0d8a8e111b5a59cfd0aee9f}
+      \strng{fullhash}{c041f6bbb0d8a8e111b5a59cfd0aee9f}
+      \strng{fullhashraw}{c041f6bbb0d8a8e111b5a59cfd0aee9f}
+      \strng{bibnamehash}{c041f6bbb0d8a8e111b5a59cfd0aee9f}
+      \strng{authorbibnamehash}{c041f6bbb0d8a8e111b5a59cfd0aee9f}
+      \strng{authornamehash}{c041f6bbb0d8a8e111b5a59cfd0aee9f}
+      \strng{authorfullhash}{c041f6bbb0d8a8e111b5a59cfd0aee9f}
+      \strng{authorfullhashraw}{c041f6bbb0d8a8e111b5a59cfd0aee9f}
+      \field{sortinit}{1}
+      \field{sortinithash}{4f6aaa89bab872aa0999fec09ff8e98a}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{howpublished}{RFC 9112, IETF}
+      \field{title}{{HTTP/1.1}}
+      \field{year}{2022}
+      \verb{doi}
+      \verb 10.17487/RFC9112
+      \endverb
+      \verb{urlraw}
+      \verb https://www.rfc-editor.org/rfc/rfc9112
+      \endverb
+      \verb{url}
+      \verb https://www.rfc-editor.org/rfc/rfc9112
+      \endverb
+    \endentry
+    \entry{hyper_4008}{misc}{}{}
+      \name{author}{1}{}{%
+        {{hash=4ff52f158e3cdda61e8e42417c89cbe2}{%
+           family={{hyper maintainers}},
+           familyi={h\bibinitperiod}}}%
+      }
+      \strng{namehash}{4ff52f158e3cdda61e8e42417c89cbe2}
+      \strng{fullhash}{4ff52f158e3cdda61e8e42417c89cbe2}
+      \strng{fullhashraw}{4ff52f158e3cdda61e8e42417c89cbe2}
+      \strng{bibnamehash}{4ff52f158e3cdda61e8e42417c89cbe2}
+      \strng{authorbibnamehash}{4ff52f158e3cdda61e8e42417c89cbe2}
+      \strng{authornamehash}{4ff52f158e3cdda61e8e42417c89cbe2}
+      \strng{authorfullhash}{4ff52f158e3cdda61e8e42417c89cbe2}
+      \strng{authorfullhashraw}{4ff52f158e3cdda61e8e42417c89cbe2}
+      \field{sortinit}{2}
+      \field{sortinithash}{8b555b3791beccb63322c22f3320aa9a}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{note}{Closed as not\_planned 2026-01-12}
+      \field{title}{{hyper issue \#4008: provide built-in chunked request limits and CPU-safe streaming helpers}}
+      \field{year}{2026}
+      \verb{urlraw}
+      \verb https://github.com/hyperium/hyper/issues/4008
+      \endverb
+      \verb{url}
+      \verb https://github.com/hyperium/hyper/issues/4008
+      \endverb
+    \endentry
+    \entry{cwe407}{misc}{}{}
+      \name{author}{1}{}{%
+        {{hash=ed5f36b0c6246bf884830c7836478e39}{%
+           family={{MITRE}},
+           familyi={M\bibinitperiod}}}%
+      }
+      \strng{namehash}{ed5f36b0c6246bf884830c7836478e39}
+      \strng{fullhash}{ed5f36b0c6246bf884830c7836478e39}
+      \strng{fullhashraw}{ed5f36b0c6246bf884830c7836478e39}
+      \strng{bibnamehash}{ed5f36b0c6246bf884830c7836478e39}
+      \strng{authorbibnamehash}{ed5f36b0c6246bf884830c7836478e39}
+      \strng{authornamehash}{ed5f36b0c6246bf884830c7836478e39}
+      \strng{authorfullhash}{ed5f36b0c6246bf884830c7836478e39}
+      \strng{authorfullhashraw}{ed5f36b0c6246bf884830c7836478e39}
+      \field{sortinit}{6}
+      \field{sortinithash}{b33bc299efb3c36abec520a4c896a66d}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{howpublished}{Common Weakness Enumeration}
+      \field{title}{{CWE-407: Inefficient Algorithmic Complexity}}
+      \verb{urlraw}
+      \verb https://cwe.mitre.org/data/definitions/407.html
+      \endverb
+      \verb{url}
+      \verb https://cwe.mitre.org/data/definitions/407.html
+      \endverb
+    \endentry
+    \entry{cve_2025_67725_tornado}{misc}{}{}
+      \name{author}{1}{}{%
+        {{hash=ecb3c2e96753416389ee66f32a97c428}{%
+           family={{Tornado Web Server Maintainers}},
+           familyi={T\bibinitperiod}}}%
+      }
+      \strng{namehash}{ecb3c2e96753416389ee66f32a97c428}
+      \strng{fullhash}{ecb3c2e96753416389ee66f32a97c428}
+      \strng{fullhashraw}{ecb3c2e96753416389ee66f32a97c428}
+      \strng{bibnamehash}{ecb3c2e96753416389ee66f32a97c428}
+      \strng{authorbibnamehash}{ecb3c2e96753416389ee66f32a97c428}
+      \strng{authornamehash}{ecb3c2e96753416389ee66f32a97c428}
+      \strng{authorfullhash}{ecb3c2e96753416389ee66f32a97c428}
+      \strng{authorfullhashraw}{ecb3c2e96753416389ee66f32a97c428}
+      \field{sortinit}{7}
+      \field{sortinithash}{108d0be1b1bee9773a1173443802c0a3}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{howpublished}{GHSA-c98p-7wgm-6p64 / CVE-2025-67725}
+      \field{title}{{Tornado quadratic header coalescing DoS}}
+      \field{year}{2025}
+      \verb{urlraw}
+      \verb https://github.com/tornadoweb/tornado/security/advisories/GHSA-c98p-7wgm-6p64
+      \endverb
+      \verb{url}
+      \verb https://github.com/tornadoweb/tornado/security/advisories/GHSA-c98p-7wgm-6p64
+      \endverb
+    \endentry
+    \entry{cve_2025_14550_django}{misc}{}{}
+      \name{author}{1}{}{%
+        {{hash=9c503d46d2fe32b0a30608f656685a48}{%
+           family={{Django Project}},
+           familyi={D\bibinitperiod}}}%
+      }
+      \strng{namehash}{9c503d46d2fe32b0a30608f656685a48}
+      \strng{fullhash}{9c503d46d2fe32b0a30608f656685a48}
+      \strng{fullhashraw}{9c503d46d2fe32b0a30608f656685a48}
+      \strng{bibnamehash}{9c503d46d2fe32b0a30608f656685a48}
+      \strng{authorbibnamehash}{9c503d46d2fe32b0a30608f656685a48}
+      \strng{authornamehash}{9c503d46d2fe32b0a30608f656685a48}
+      \strng{authorfullhash}{9c503d46d2fe32b0a30608f656685a48}
+      \strng{authorfullhashraw}{9c503d46d2fe32b0a30608f656685a48}
+      \field{sortinit}{8}
+      \field{sortinithash}{a231b008ebf0ecbe0b4d96dcc159445f}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{howpublished}{CVE-2025-14550}
+      \field{title}{{Django ASGI repeated-header concatenation DoS}}
+      \field{year}{2026}
+    \endentry
+    \entry{cve_2026_7790_cowlib}{misc}{}{}
+      \name{author}{1}{}{%
+        {{hash=6b7d25eb9ef6bef769e9732df8fde1da}{%
+           family={{Erlang Ecosystem Foundation CNA}},
+           familyi={E\bibinitperiod}}}%
+      }
+      \strng{namehash}{6b7d25eb9ef6bef769e9732df8fde1da}
+      \strng{fullhash}{6b7d25eb9ef6bef769e9732df8fde1da}
+      \strng{fullhashraw}{6b7d25eb9ef6bef769e9732df8fde1da}
+      \strng{bibnamehash}{6b7d25eb9ef6bef769e9732df8fde1da}
+      \strng{authorbibnamehash}{6b7d25eb9ef6bef769e9732df8fde1da}
+      \strng{authornamehash}{6b7d25eb9ef6bef769e9732df8fde1da}
+      \strng{authorfullhash}{6b7d25eb9ef6bef769e9732df8fde1da}
+      \strng{authorfullhashraw}{6b7d25eb9ef6bef769e9732df8fde1da}
+      \field{sortinit}{9}
+      \field{sortinithash}{0a5ebc79d83c96b6579069544c73c7d4}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{howpublished}{CVE-2026-7790}
+      \field{title}{{cowlib chunk-size hex amplification}}
+      \field{year}{2026}
+      \verb{urlraw}
+      \verb https://cna.erlef.org/cves/CVE-2026-7790.html
+      \endverb
+      \verb{url}
+      \verb https://cna.erlef.org/cves/CVE-2026-7790.html
+      \endverb
+    \endentry
+    \entry{cve_2023_39326_go}{misc}{}{}
+      \name{author}{1}{}{%
+        {{hash=0ccf7ba5cfd0de39a46a9997f859e813}{%
+           family={{Go security team}},
+           familyi={G\bibinitperiod}}}%
+      }
+      \strng{namehash}{0ccf7ba5cfd0de39a46a9997f859e813}
+      \strng{fullhash}{0ccf7ba5cfd0de39a46a9997f859e813}
+      \strng{fullhashraw}{0ccf7ba5cfd0de39a46a9997f859e813}
+      \strng{bibnamehash}{0ccf7ba5cfd0de39a46a9997f859e813}
+      \strng{authorbibnamehash}{0ccf7ba5cfd0de39a46a9997f859e813}
+      \strng{authornamehash}{0ccf7ba5cfd0de39a46a9997f859e813}
+      \strng{authorfullhash}{0ccf7ba5cfd0de39a46a9997f859e813}
+      \strng{authorfullhashraw}{0ccf7ba5cfd0de39a46a9997f859e813}
+      \field{sortinit}{1}
+      \field{sortinithash}{4f6aaa89bab872aa0999fec09ff8e98a}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{howpublished}{CVE-2023-39326}
+      \field{title}{{net/http chunk-extension cost cap}}
+      \field{year}{2023}
+      \verb{urlraw}
+      \verb https://pkg.go.dev/vuln/GO-2023-2382
+      \endverb
+      \verb{url}
+      \verb https://pkg.go.dev/vuln/GO-2023-2382
+      \endverb
+    \endentry
+    \entry{cve_2014_0075_tomcat}{misc}{}{}
+      \name{author}{1}{}{%
+        {{hash=8b499b5be8914246b406785e1327dbb3}{%
+           family={{Apache Software Foundation}},
+           familyi={A\bibinitperiod}}}%
+      }
+      \strng{namehash}{8b499b5be8914246b406785e1327dbb3}
+      \strng{fullhash}{8b499b5be8914246b406785e1327dbb3}
+      \strng{fullhashraw}{8b499b5be8914246b406785e1327dbb3}
+      \strng{bibnamehash}{8b499b5be8914246b406785e1327dbb3}
+      \strng{authorbibnamehash}{8b499b5be8914246b406785e1327dbb3}
+      \strng{authornamehash}{8b499b5be8914246b406785e1327dbb3}
+      \strng{authorfullhash}{8b499b5be8914246b406785e1327dbb3}
+      \strng{authorfullhashraw}{8b499b5be8914246b406785e1327dbb3}
+      \field{sortinit}{1}
+      \field{sortinithash}{4f6aaa89bab872aa0999fec09ff8e98a}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{howpublished}{CVE-2014-0075}
+      \field{title}{{Apache Tomcat chunk-size integer overflow}}
+      \field{year}{2014}
+    \endentry
+    \entry{netty_aggregator}{misc}{}{}
+      \name{author}{1}{}{%
+        {{hash=92831f79c3dabf9d92e06cf1a6b490a6}{%
+           family={{Netty Project}},
+           familyi={N\bibinitperiod}}}%
+      }
+      \strng{namehash}{92831f79c3dabf9d92e06cf1a6b490a6}
+      \strng{fullhash}{92831f79c3dabf9d92e06cf1a6b490a6}
+      \strng{fullhashraw}{92831f79c3dabf9d92e06cf1a6b490a6}
+      \strng{bibnamehash}{92831f79c3dabf9d92e06cf1a6b490a6}
+      \strng{authorbibnamehash}{92831f79c3dabf9d92e06cf1a6b490a6}
+      \strng{authornamehash}{92831f79c3dabf9d92e06cf1a6b490a6}
+      \strng{authorfullhash}{92831f79c3dabf9d92e06cf1a6b490a6}
+      \strng{authorfullhashraw}{92831f79c3dabf9d92e06cf1a6b490a6}
+      \field{sortinit}{1}
+      \field{sortinithash}{4f6aaa89bab872aa0999fec09ff8e98a}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{title}{{Netty HttpObjectAggregator}}
+      \verb{urlraw}
+      \verb https://netty.io/4.1/api/io/netty/handler/codec/http/HttpObjectAggregator.html
+      \endverb
+      \verb{url}
+      \verb https://netty.io/4.1/api/io/netty/handler/codec/http/HttpObjectAggregator.html
+      \endverb
+    \endentry
+    \entry{asgi_spec}{misc}{}{}
+      \name{author}{1}{}{%
+        {{hash=e81bb6a4e26664436b2fd7817ee0d024}{%
+           family={{ASGI working group}},
+           familyi={A\bibinitperiod}}}%
+      }
+      \strng{namehash}{e81bb6a4e26664436b2fd7817ee0d024}
+      \strng{fullhash}{e81bb6a4e26664436b2fd7817ee0d024}
+      \strng{fullhashraw}{e81bb6a4e26664436b2fd7817ee0d024}
+      \strng{bibnamehash}{e81bb6a4e26664436b2fd7817ee0d024}
+      \strng{authorbibnamehash}{e81bb6a4e26664436b2fd7817ee0d024}
+      \strng{authornamehash}{e81bb6a4e26664436b2fd7817ee0d024}
+      \strng{authorfullhash}{e81bb6a4e26664436b2fd7817ee0d024}
+      \strng{authorfullhashraw}{e81bb6a4e26664436b2fd7817ee0d024}
+      \field{sortinit}{1}
+      \field{sortinithash}{4f6aaa89bab872aa0999fec09ff8e98a}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{title}{{ASGI 3.0 specification}}
+      \verb{urlraw}
+      \verb https://asgi.readthedocs.io/
+      \endverb
+      \verb{url}
+      \verb https://asgi.readthedocs.io/
+      \endverb
+    \endentry
+    \entry{wsgi_pep3333}{misc}{}{}
+      \name{author}{1}{}{%
+        {{hash=6c51e857aaf0f52de14dd1e6ea41169c}{%
+           family={{P. J. Eby}},
+           familyi={P\bibinitperiod}}}%
+      }
+      \strng{namehash}{6c51e857aaf0f52de14dd1e6ea41169c}
+      \strng{fullhash}{6c51e857aaf0f52de14dd1e6ea41169c}
+      \strng{fullhashraw}{6c51e857aaf0f52de14dd1e6ea41169c}
+      \strng{bibnamehash}{6c51e857aaf0f52de14dd1e6ea41169c}
+      \strng{authorbibnamehash}{6c51e857aaf0f52de14dd1e6ea41169c}
+      \strng{authornamehash}{6c51e857aaf0f52de14dd1e6ea41169c}
+      \strng{authorfullhash}{6c51e857aaf0f52de14dd1e6ea41169c}
+      \strng{authorfullhashraw}{6c51e857aaf0f52de14dd1e6ea41169c}
+      \field{sortinit}{1}
+      \field{sortinithash}{4f6aaa89bab872aa0999fec09ff8e98a}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{title}{{PEP 3333: Python Web Server Gateway Interface v1.0.1}}
+      \field{year}{2010}
+      \verb{urlraw}
+      \verb https://peps.python.org/pep-3333/
+      \endverb
+      \verb{url}
+      \verb https://peps.python.org/pep-3333/
+      \endverb
+    \endentry
+  \enddatalist
+\endrefsection
+\endinput
+

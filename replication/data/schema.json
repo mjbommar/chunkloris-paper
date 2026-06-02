@@ -1,0 +1,118 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "per-chunk amplification measurement",
+  "description": "One measurement record per (server, version, mode, N) cell, plus per-server metadata.",
+  "type": "object",
+  "properties": {
+    "schema_version": {"type": "string", "enum": ["1.0", "1.1"]},
+    "generated_at": {"type": "string", "format": "date-time"},
+    "host": {
+      "type": "object",
+      "properties": {
+        "kernel": {"type": "string"},
+        "cpu_model": {"type": "string"},
+        "cpu_count": {"type": "integer"},
+        "memory_gb": {"type": "number"}
+      }
+    },
+    "servers": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "ecosystem", "name", "version", "verdict", "measurements"],
+        "properties": {
+          "id": {"type": "string", "description": "slug, e.g. uvicorn-h11"},
+          "ecosystem": {"enum": [
+            "python", "go", "rust", "node", "jvm", "beam", "ruby", "c", "dotnet",
+            "crystal", "swift", "websocket-cross-language", "http2-cross-language"
+          ]},
+          "name": {"type": "string"},
+          "version": {"type": "string"},
+          "runtime": {"type": "string", "description": "python-3.12, node-22, jdk-21, go-1.23, rust-1.83, ..."},
+          "concurrency_model": {"enum": ["event-loop", "thread-per-conn", "thread-pool", "actor", "n-m-scheduler", "fiber", "process"]},
+          "parser": {"type": "string", "description": "llhttp / h11 / httptools / hyper-internal / picohttpparser / cowboy / hand-rolled / ..."},
+          "delivery_granularity": {"enum": ["per-chunk", "per-recv", "per-event-batch", "fully-buffered", "unknown"]},
+          "limit_chunks_helper": {"enum": ["builtin", "exposed-stdlib", "third-party", "none"]},
+          "containerization": {
+            "type": "object",
+            "properties": {
+              "image": {"type": "string"},
+              "cpus": {"type": "number"},
+              "memory_gb": {"type": "number"}
+            }
+          },
+          "verdict": {"enum": ["VULNERABLE-PER-CHUNK", "VULNERABLE-PER-RECV-ONLY", "BATCHES-CORRECTLY", "QUADRATIC", "CRASHES", "UNKNOWN"]},
+          "measurements": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": ["mode", "n_bytes", "wall_seconds"],
+              "properties": {
+                "mode": {"enum": [
+                  "A-bridge-coalesced", "B-paced-100us", "control-single-write",
+                  "A-h2-bridge", "B-h2-paced-100us",
+                  "A-ws-bridge", "B-ws-paced-100us",
+                  "A-grpc-bridge", "B-grpc-paced-100us",
+                  "CONTROL-content-length"
+                ], "description": "v1.1 admits HTTP/2, WebSocket, gRPC probe modes from wave3"},
+                "n_bytes": {"type": "integer", "description": "body byte count"},
+                "n_chunks": {"type": "integer", "description": "number of wire chunks (= n_bytes when 1-byte chunked)"},
+                "wall_seconds": {"type": "number"},
+                "server_cpu_pct": {"type": "number"},
+                "server_us_per_chunk": {"type": "number"},
+                "succeeded": {"type": "boolean", "default": true},
+                "notes": {"type": "string"}
+              }
+            }
+          },
+          "scaling_exponent_mode_a": {"type": "number", "description": "log-log slope of wall time vs N (mode A)"},
+          "scaling_exponent_mode_b": {"type": "number"},
+          "top_hot_functions": {
+            "type": "array",
+            "description": "top profile entries from worst-case cell",
+            "items": {
+              "type": "object",
+              "properties": {
+                "rank": {"type": "integer"},
+                "function": {"type": "string"},
+                "file_line": {"type": "string"},
+                "self_time_s": {"type": "number"},
+                "cum_time_s": {"type": "number"},
+                "tooling": {"type": "string", "description": "cProfile / pprof / perf / v8.log / async-profiler"}
+              }
+            }
+          },
+          "batching_primitive": {
+            "type": "object",
+            "properties": {
+              "available": {"type": "boolean"},
+              "name": {"type": "string", "description": "e.g. Netty HttpObjectAggregator"},
+              "default_installed": {"type": "boolean"},
+              "notes": {"type": "string"}
+            }
+          },
+          "source_citations": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "what": {"type": "string", "description": "decoder / handler-delivery / accumulator"},
+                "file_line": {"type": "string"},
+                "url": {"type": "string"}
+              }
+            }
+          },
+          "scoop": {
+            "type": "object",
+            "properties": {
+              "prior_cve": {"type": "array", "items": {"type": "string"}},
+              "prior_issue": {"type": "array", "items": {"type": "string"}},
+              "maintainer_position": {"enum": ["unknown", "declined", "accepted", "in-progress"]},
+              "url_refs": {"type": "array", "items": {"type": "string"}}
+            }
+          }
+        }
+      }
+    }
+  }
+}

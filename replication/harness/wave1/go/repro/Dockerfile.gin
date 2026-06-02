@@ -1,0 +1,6 @@
+FROM golang:1.23-bookworm
+WORKDIR /app
+COPY server_gin.go .
+RUN go mod init srv && go get github.com/gin-gonic/gin@v1.10.1 && go build -o /usr/local/bin/srv server_gin.go
+EXPOSE 8000 6060
+CMD ["/usr/local/bin/srv"]

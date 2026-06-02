@@ -1,0 +1,5 @@
+FROM haproxy:3.0
+USER root
+COPY haproxy.cfg /usr/local/etc/haproxy/haproxy.cfg
+COPY svc.lua     /etc/haproxy/svc.lua
+EXPOSE 8000

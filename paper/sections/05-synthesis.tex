@@ -1,0 +1,135 @@
+\subsection{Master comparison matrix}
+\label{sec:synth-matrix}
+
+Table~\ref{tab:matrix} summarizes the per-chunk cost, scaling
+exponent, and overall verdict for every server measured.
+Servers are sorted by verdict (BATCHES-CORRECTLY first, then
+VULNERABLE-PER-CHUNK in ascending per-chunk cost, then QUADRATIC).
+The verdict column uses the four-level taxonomy from
+Section~\ref{sec:method-modes}.
+
+\begin{table}[h]
+  \centering
+  \footnotesize
+  \caption{Master comparison matrix. Per-chunk cost is the server-CPU
+  cost measured under Mode B (paced \SI{100}{\micro\second},
+  $N{=}\num{250000}$, 1\,vCPU). Auto-generated from
+  \texttt{data/wave*.json} via \texttt{scripts/render\_matrix.py}.}
+  \label{tab:matrix}
+  \input{figures/matrix_table}
+\end{table}
+
+\subsection{Three structural classes}
+\label{sec:synth-classes}
+
+Across 27 servers and 7 ecosystems we observe three structural
+classes:
+
+\paragraph{Class~1: BATCHES-CORRECTLY (1 server).}
+Kestrel on ASP.NET Core. Its
+\fname{Http1ChunkedEncodingMessageBody.PumpAsync} pumps the
+socket-readable buffer through the chunked-decoder loop entirely
+inside one synchronous \fname{Read()} invocation, calling
+\fname{FlushAsync()} only once before yielding back to the
+application's \fname{PipeReader.ReadAsync}. The handler observes
+one \fname{ReadResult} containing the concatenated bytes of every
+chunk present in the buffer; per-chunk decoder cost is paid in
+managed code inside the pump and never crosses the
+\fname{async}/\fname{await} boundary. \fname{System.IO.Pipelines} is
+the substrate that makes this efficient.
+
+\paragraph{Class~2: VULNERABLE-PER-CHUNK linear (22 servers).}
+The chunked decoder loops one application callback per chunk
+(ASGI \fname{await receive()}, Go's \fname{Body.Read} returning a
+single chunk, Rust hyper's
+\fname{ChunkedState::Body} yielding one \fname{Frame::data(Bytes)},
+Node's \fname{parserOnBody} pushing into a Readable stream,
+BEAM's \fname{cowboy\_stream\_h:data/4} message, Ruby's
+\fname{decode\_chunk}, JVM's
+\fname{Http1xServerRequest.onData}). Per-chunk cost is dominated
+by the dispatch primitive in the runtime rather than the parser
+itself: ASGI receive, goroutine wake, future-poll,
+\fname{process.nextTick}, mailbox enqueue, fiber switch, or
+thread context switch.
+
+The cost-per-chunk spread within this class is
+$\sim 50\times$, from \SI{2.1}{\micro\second}/chunk (uvicorn +
+httptools) to \SI{114}{\micro\second}/chunk (nginx as origin).
+Compiled languages (Rust, C, Go) cluster at the cheap end;
+managed-runtime servers running their parser in interpreted code
+(Puma, gunicorn, waitress, tornado) cluster at the expensive end.
+
+\paragraph{Class~3: QUADRATIC (4 servers).}
+Two distinct quadratic mechanisms appear in our sample, and they
+are not from the same runtime:
+
+\begin{enumerate}
+  \item \emph{Node.js Readable substrate.} Each parsed chunk
+    causes \fname{llhttp on\_body} -> \fname{parserOnBody} ->
+    \fname{socket.push(buf)} -> \fname{addChunk} ->
+    \fname{maybeReadMore} -> \fname{process.nextTick}. The
+    \fname{nextTick} per chunk grows the microtask queue;
+    drain cost is superlinear in queue depth. Inherited by
+    \fwid{express} and \fwid{fastify}.
+  \item \emph{Bandit iolist accumulator.} Each
+    \fname{do\_read\_chunk!/4} call walks the accumulated
+    iolist via \fname{erlang:iolist\_size/1} (89.3\% of CPU in
+    the \fname{:eprof} sample). The cost grows linearly per
+    chunk in the size of the already-accumulated body, giving
+    a quadratic total.
+\end{enumerate}
+
+Both mechanisms are "per-chunk operation walks accumulated
+state" patterns; the substrate differs but the asymptotic shape
+is the same.
+
+\subsection{Headline ranking}
+\label{sec:synth-rank}
+
+Figure~\ref{fig:headline-uschunk} ranks all 27 servers by
+per-chunk cost on a log-scale x-axis. The most-deployed servers
+in each ecosystem (\fwid{express} in Node, \fwid{Spring Boot} on
+Tomcat in JVM, \fwid{Puma} in Ruby, \fwid{gunicorn} in Python,
+\fwid{nginx} as origin in C) sit at or near the worst end of their
+respective ecosystems. This is the dominant pattern we observe
+across the matrix: \emph{the most-deployed server in each
+ecosystem is rarely the fastest at this workload}.
+
+Figure~\ref{fig:scaling} plots wall time as a function of $N$
+on log-log axes; the four QUADRATIC servers separate cleanly
+from the linear pack. Figure~\ref{fig:mode-a-vs-b} contrasts
+Mode A versus Mode B at $N{=}\num{250000}$ and shows that for
+several servers Mode A is two to three orders of magnitude
+faster than Mode B, hiding the bug from any test methodology that
+omits paced probes.
+
+\begin{figure}[h]
+  \centering
+  \includegraphics[width=0.9\linewidth]{figures/verdict_distribution.pdf}
+  \caption{Verdict distribution across the 27 surveyed servers.
+  One server (Kestrel) batches correctly; 22 are linear-per-chunk
+  vulnerable; 4 are quadratic.}
+  \label{fig:verdict-distribution}
+\end{figure}
+
+\begin{figure}[h]
+  \centering
+  \includegraphics[width=\linewidth]{figures/ecosystem_grouped.pdf}
+  \caption{Per-chunk cost grouped by ecosystem (sorted by
+  within-ecosystem ascending cost). Hatched bars are QUADRATIC;
+  green-edged bars are BATCHES-CORRECTLY. Every ecosystem with
+  more than one entry has at least one VULNERABLE-PER-CHUNK
+  server; only .NET, with one entry (Kestrel), is free of the
+  class in our sample.}
+  \label{fig:ecosystem-grouped}
+\end{figure}
+
+\begin{figure}[h]
+  \centering
+  \includegraphics[width=\linewidth]{figures/mode_a_vs_b.pdf}
+  \caption{Mode A (bridge-coalesced) vs Mode B (paced
+  \SI{100}{\micro\second}) at $N{=}\num{250000}$. For many servers
+  Mode A is two or three orders of magnitude faster than Mode B,
+  hiding the bug under default lab-style network conditions.}
+  \label{fig:mode-a-vs-b}
+\end{figure}

@@ -1,0 +1,30 @@
+# LaTeX build artifacts
+*.aux
+*.log
+*.blg
+*.bcf
+*.run.xml
+*.out
+*.toc
+*.lof
+*.lot
+*.fls
+*.fdb_latexmk
+*.synctex.gz
+*-blx.bib
+_minted*/
+# Note: paper/main.pdf is intentionally tracked for review on GitHub.
+# Note: paper/main.bbl is intentionally tracked so the arXiv tarball is reproducible.
+
+# arXiv tarball (regenerate with `make -C paper arxiv`)
+chunkloris-paper-arxiv.tar.gz
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+.ruff_cache/
+.pytest_cache/
+
+# OS
+.DS_Store

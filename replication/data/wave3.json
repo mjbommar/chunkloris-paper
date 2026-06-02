@@ -1,0 +1,881 @@
+{
+  "schema_version": "1.1",
+  "wave": 3,
+  "host": {
+    "kernel": "Linux 7.0.0-14-generic",
+    "cpu_count": 24,
+    "memory_gb": 123.3
+  },
+  "servers": [
+    {
+      "id": "hypercorn-h2",
+      "ecosystem": "python",
+      "name": "hypercorn",
+      "version": "0.17.3",
+      "runtime": "python-3.12",
+      "concurrency_model": "event-loop",
+      "parser": "h2 4.1.0 (pure Python, hpack)",
+      "delivery_granularity": "per-chunk",
+      "limit_chunks_helper": "none",
+      "containerization": {
+        "image": "python:3.12-slim",
+        "cpus": 1
+      },
+      "measurements": [
+        {
+          "mode": "A-h2-bridge",
+          "n_bytes": 50000,
+          "n_chunks": 50000,
+          "wall_seconds": 0.411,
+          "server_cpu_pct": 0.0,
+          "succeeded": true,
+          "server_us_per_chunk": 8.216
+        },
+        {
+          "mode": "A-h2-bridge",
+          "n_bytes": 100000,
+          "n_chunks": 100000,
+          "wall_seconds": 1.087,
+          "server_cpu_pct": 88.43,
+          "succeeded": true,
+          "server_us_per_chunk": 10.874
+        },
+        {
+          "mode": "A-h2-bridge",
+          "n_bytes": 250000,
+          "n_chunks": 250000,
+          "wall_seconds": 2.349,
+          "server_cpu_pct": 101.95,
+          "succeeded": true,
+          "server_us_per_chunk": 9.394
+        },
+        {
+          "mode": "B-h2-paced-100us",
+          "n_bytes": 50000,
+          "n_chunks": 50000,
+          "wall_seconds": 5.926,
+          "server_cpu_pct": 68.8,
+          "succeeded": true,
+          "server_us_per_chunk": 118.529
+        },
+        {
+          "mode": "B-h2-paced-100us",
+          "n_bytes": 100000,
+          "n_chunks": 100000,
+          "wall_seconds": 11.71,
+          "server_cpu_pct": 67.44,
+          "succeeded": true,
+          "server_us_per_chunk": 117.096
+        },
+        {
+          "mode": "B-h2-paced-100us",
+          "n_bytes": 250000,
+          "n_chunks": 250000,
+          "wall_seconds": 30.843,
+          "server_cpu_pct": 67.6,
+          "succeeded": true,
+          "server_us_per_chunk": 123.37
+        }
+      ],
+      "verdict": "VULNERABLE-PER-CHUNK",
+      "scaling_exponent_mode_a": 1.07,
+      "scaling_exponent_mode_b": 1.027
+    },
+    {
+      "id": "node-h2",
+      "ecosystem": "node",
+      "name": "node http2 (native)",
+      "version": "node-22",
+      "runtime": "node-22",
+      "concurrency_model": "event-loop",
+      "parser": "nghttp2 (C, bundled)",
+      "delivery_granularity": "per-chunk",
+      "limit_chunks_helper": "none",
+      "containerization": {
+        "image": "node:22-slim",
+        "cpus": 1
+      },
+      "measurements": [
+        {
+          "mode": "A-h2-bridge",
+          "n_bytes": 50000,
+          "n_chunks": 50000,
+          "wall_seconds": 0.255,
+          "server_cpu_pct": 0.0,
+          "succeeded": true,
+          "server_us_per_chunk": 5.096
+        },
+        {
+          "mode": "A-h2-bridge",
+          "n_bytes": 100000,
+          "n_chunks": 100000,
+          "wall_seconds": 0.496,
+          "server_cpu_pct": 0.0,
+          "succeeded": true,
+          "server_us_per_chunk": 4.965
+        },
+        {
+          "mode": "A-h2-bridge",
+          "n_bytes": 250000,
+          "n_chunks": 250000,
+          "wall_seconds": 1.261,
+          "server_cpu_pct": 44.97,
+          "succeeded": true,
+          "server_us_per_chunk": 5.044
+        },
+        {
+          "mode": "B-h2-paced-100us",
+          "n_bytes": 50000,
+          "n_chunks": 50000,
+          "wall_seconds": 5.771,
+          "server_cpu_pct": 14.8,
+          "succeeded": true,
+          "server_us_per_chunk": 115.414
+        },
+        {
+          "mode": "B-h2-paced-100us",
+          "n_bytes": 100000,
+          "n_chunks": 100000,
+          "wall_seconds": 12.142,
+          "server_cpu_pct": 15.75,
+          "succeeded": true,
+          "server_us_per_chunk": 121.418
+        },
+        {
+          "mode": "B-h2-paced-100us",
+          "n_bytes": 250000,
+          "n_chunks": 250000,
+          "wall_seconds": 29.199,
+          "server_cpu_pct": 16.92,
+          "succeeded": true,
+          "server_us_per_chunk": 116.798
+        }
+      ],
+      "verdict": "VULNERABLE-PER-CHUNK",
+      "scaling_exponent_mode_a": 0.994,
+      "scaling_exponent_mode_b": 1.005
+    },
+    {
+      "id": "kestrel-h2",
+      "ecosystem": "dotnet",
+      "name": "Kestrel (ASP.NET Core 9, h2c)",
+      "version": "9.0",
+      "runtime": ".NET 9",
+      "concurrency_model": "event-loop",
+      "parser": "Kestrel HTTP/2 framer (managed)",
+      "delivery_granularity": "per-chunk",
+      "limit_chunks_helper": "none",
+      "containerization": {
+        "image": "mcr.microsoft.com/dotnet/aspnet:9.0",
+        "cpus": 1
+      },
+      "measurements": [
+        {
+          "mode": "A-h2-bridge",
+          "n_bytes": 50000,
+          "n_chunks": 50000,
+          "wall_seconds": 0.222,
+          "server_cpu_pct": 0.0,
+          "succeeded": true,
+          "server_us_per_chunk": 4.44
+        },
+        {
+          "mode": "A-h2-bridge",
+          "n_bytes": 100000,
+          "n_chunks": 100000,
+          "wall_seconds": 0.397,
+          "server_cpu_pct": 0.0,
+          "succeeded": true,
+          "server_us_per_chunk": 3.972
+        },
+        {
+          "mode": "A-h2-bridge",
+          "n_bytes": 250000,
+          "n_chunks": 250000,
+          "wall_seconds": 1.22,
+          "server_cpu_pct": 36.58,
+          "succeeded": true,
+          "server_us_per_chunk": 4.882
+        },
+        {
+          "mode": "B-h2-paced-100us",
+          "n_bytes": 50000,
+          "n_chunks": 50000,
+          "wall_seconds": 6.028,
+          "server_cpu_pct": 86.58,
+          "succeeded": true,
+          "server_us_per_chunk": 120.553
+        },
+        {
+          "mode": "B-h2-paced-100us",
+          "n_bytes": 100000,
+          "n_chunks": 100000,
+          "wall_seconds": 11.674,
+          "server_cpu_pct": 79.2,
+          "succeeded": true,
+          "server_us_per_chunk": 116.74
+        },
+        {
+          "mode": "B-h2-paced-100us",
+          "n_bytes": 250000,
+          "n_chunks": 250000,
+          "wall_seconds": 31.09,
+          "server_cpu_pct": 87.33,
+          "succeeded": true,
+          "server_us_per_chunk": 124.361
+        }
+      ],
+      "verdict": "VULNERABLE-PER-CHUNK",
+      "scaling_exponent_mode_a": 1.067,
+      "scaling_exponent_mode_b": 1.022
+    },
+    {
+      "id": "vertx-h2",
+      "ecosystem": "jvm",
+      "name": "Vert.x 4.5 (Netty h2c)",
+      "version": "4.5.10",
+      "runtime": "JDK 21",
+      "concurrency_model": "event-loop",
+      "parser": "Netty Http2FrameCodec",
+      "delivery_granularity": "per-chunk",
+      "limit_chunks_helper": "none",
+      "containerization": {
+        "image": "eclipse-temurin:21-jre",
+        "cpus": 1
+      },
+      "measurements": [
+        {
+          "mode": "A-h2-bridge",
+          "n_bytes": 50000,
+          "n_chunks": 50000,
+          "wall_seconds": 0.252,
+          "server_cpu_pct": 0.0,
+          "succeeded": true,
+          "server_us_per_chunk": 5.048
+        },
+        {
+          "mode": "A-h2-bridge",
+          "n_bytes": 100000,
+          "n_chunks": 100000,
+          "wall_seconds": 0.358,
+          "server_cpu_pct": 0.0,
+          "succeeded": true,
+          "server_us_per_chunk": 3.581
+        },
+        {
+          "mode": "A-h2-bridge",
+          "n_bytes": 250000,
+          "n_chunks": 250000,
+          "wall_seconds": 1.359,
+          "server_cpu_pct": 23.07,
+          "succeeded": true,
+          "server_us_per_chunk": 5.437
+        },
+        {
+          "mode": "B-h2-paced-100us",
+          "n_bytes": 50000,
+          "n_chunks": 50000,
+          "wall_seconds": 5.683,
+          "server_cpu_pct": 25.37,
+          "succeeded": true,
+          "server_us_per_chunk": 113.653
+        },
+        {
+          "mode": "B-h2-paced-100us",
+          "n_bytes": 100000,
+          "n_chunks": 100000,
+          "wall_seconds": 12.417,
+          "server_cpu_pct": 9.93,
+          "succeeded": true,
+          "server_us_per_chunk": 124.168
+        },
+        {
+          "mode": "B-h2-paced-100us",
+          "n_bytes": 250000,
+          "n_chunks": 250000,
+          "wall_seconds": 29.302,
+          "server_cpu_pct": 11.31,
+          "succeeded": true,
+          "server_us_per_chunk": 117.207
+        }
+      ],
+      "verdict": "VULNERABLE-PER-CHUNK",
+      "scaling_exponent_mode_a": 1.068,
+      "scaling_exponent_mode_b": 1.015
+    },
+    {
+      "id": "rust-hyper-h2",
+      "ecosystem": "rust",
+      "name": "hyper 1.5 + h2 0.4 (h2c)",
+      "version": "hyper 1.5 / h2 0.4",
+      "runtime": "rustc 1.85",
+      "concurrency_model": "event-loop",
+      "parser": "h2 crate (Rust)",
+      "delivery_granularity": "per-chunk",
+      "limit_chunks_helper": "none",
+      "containerization": {
+        "image": "debian:bookworm-slim",
+        "cpus": 1
+      },
+      "measurements": [
+        {
+          "mode": "A-h2-bridge",
+          "n_bytes": 50000,
+          "n_chunks": 50000,
+          "wall_seconds": 0.261,
+          "server_cpu_pct": 0.0,
+          "succeeded": true,
+          "server_us_per_chunk": 5.211
+        },
+        {
+          "mode": "A-h2-bridge",
+          "n_bytes": 100000,
+          "n_chunks": 100000,
+          "wall_seconds": 0.579,
+          "server_cpu_pct": 0.0,
+          "succeeded": true,
+          "server_us_per_chunk": 5.786
+        },
+        {
+          "mode": "A-h2-bridge",
+          "n_bytes": 250000,
+          "n_chunks": 250000,
+          "wall_seconds": 1.349,
+          "server_cpu_pct": 10.25,
+          "succeeded": true,
+          "server_us_per_chunk": 5.397
+        },
+        {
+          "mode": "B-h2-paced-100us",
+          "n_bytes": 50000,
+          "n_chunks": 50000,
+          "wall_seconds": 5.881,
+          "server_cpu_pct": 8.69,
+          "succeeded": true,
+          "server_us_per_chunk": 117.613
+        },
+        {
+          "mode": "B-h2-paced-100us",
+          "n_bytes": 100000,
+          "n_chunks": 100000,
+          "wall_seconds": 11.695,
+          "server_cpu_pct": 8.16,
+          "succeeded": true,
+          "server_us_per_chunk": 116.953
+        },
+        {
+          "mode": "B-h2-paced-100us",
+          "n_bytes": 250000,
+          "n_chunks": 250000,
+          "wall_seconds": 29.012,
+          "server_cpu_pct": 13.45,
+          "succeeded": true,
+          "server_us_per_chunk": 116.047
+        }
+      ],
+      "verdict": "VULNERABLE-PER-CHUNK",
+      "scaling_exponent_mode_a": 1.016,
+      "scaling_exponent_mode_b": 0.992
+    },
+    {
+      "id": "go-h2c",
+      "ecosystem": "go",
+      "name": "Go net/http + golang.org/x/net/http2 (h2c)",
+      "version": "go 1.23 + x/net v0.30",
+      "runtime": "Go 1.23",
+      "concurrency_model": "n-m-scheduler",
+      "parser": "x/net/http2 Framer",
+      "delivery_granularity": "per-chunk",
+      "limit_chunks_helper": "none",
+      "containerization": {
+        "image": "debian:bookworm-slim",
+        "cpus": 1
+      },
+      "measurements": [
+        {
+          "mode": "A-h2-bridge",
+          "n_bytes": 50000,
+          "n_chunks": 50000,
+          "wall_seconds": 0.245,
+          "server_cpu_pct": 0.0,
+          "succeeded": true,
+          "server_us_per_chunk": 4.904
+        },
+        {
+          "mode": "A-h2-bridge",
+          "n_bytes": 100000,
+          "n_chunks": 100000,
+          "wall_seconds": 0.505,
+          "server_cpu_pct": 0.0,
+          "succeeded": true,
+          "server_us_per_chunk": 5.047
+        },
+        {
+          "mode": "A-h2-bridge",
+          "n_bytes": 250000,
+          "n_chunks": 250000,
+          "wall_seconds": 1.124,
+          "server_cpu_pct": 0.0,
+          "succeeded": true,
+          "server_us_per_chunk": 4.498
+        },
+        {
+          "mode": "B-h2-paced-100us",
+          "n_bytes": 50000,
+          "n_chunks": 50000,
+          "wall_seconds": 5.993,
+          "server_cpu_pct": 25.72,
+          "succeeded": true,
+          "server_us_per_chunk": 119.866
+        },
+        {
+          "mode": "B-h2-paced-100us",
+          "n_bytes": 100000,
+          "n_chunks": 100000,
+          "wall_seconds": 11.609,
+          "server_cpu_pct": 26.34,
+          "succeeded": true,
+          "server_us_per_chunk": 116.087
+        },
+        {
+          "mode": "B-h2-paced-100us",
+          "n_bytes": 250000,
+          "n_chunks": 250000,
+          "wall_seconds": 31.064,
+          "server_cpu_pct": 28.22,
+          "succeeded": true,
+          "server_us_per_chunk": 124.256
+        }
+      ],
+      "verdict": "VULNERABLE-PER-CHUNK",
+      "scaling_exponent_mode_a": 0.943,
+      "scaling_exponent_mode_b": 1.025
+    },
+    {
+      "id": "py-uvicorn-websockets",
+      "ecosystem": "python",
+      "name": "uvicorn (websockets impl)",
+      "version": "uvicorn 0.32.1, websockets 13.1, starlette 0.41.3",
+      "runtime": "python-3.13",
+      "concurrency_model": "event-loop",
+      "parser": "websockets (pure-python frame decoder)",
+      "delivery_granularity": "per-frame",
+      "verdict": "VULNERABLE-PER-FRAME",
+      "measurements": [
+        {
+          "mode": "A-ws-bridge",
+          "n_frames": 50000,
+          "wall_seconds_avg3": 0.237,
+          "us_per_frame": 4.74,
+          "ok": true,
+          "wall_seconds": 0.237,
+          "server_us_per_chunk": 4.74,
+          "n_chunks": 50000
+        },
+        {
+          "mode": "A-ws-bridge",
+          "n_frames": 100000,
+          "wall_seconds_avg3": 0.466,
+          "us_per_frame": 4.66,
+          "ok": true,
+          "wall_seconds": 0.466,
+          "server_us_per_chunk": 4.66,
+          "n_chunks": 100000
+        },
+        {
+          "mode": "A-ws-bridge",
+          "n_frames": 250000,
+          "wall_seconds_avg3": 1.173,
+          "us_per_frame": 4.69,
+          "ok": true,
+          "wall_seconds": 1.173,
+          "server_us_per_chunk": 4.69,
+          "n_chunks": 250000
+        },
+        {
+          "mode": "B-ws-paced-100us",
+          "n_frames": 50000,
+          "wall_seconds": 5.229,
+          "server_overhead_s": 0.229,
+          "us_per_frame_overhead": 4.58,
+          "ok": true,
+          "n_chunks": 50000
+        },
+        {
+          "mode": "B-ws-paced-100us",
+          "n_frames": 100000,
+          "wall_seconds": 10.616,
+          "server_overhead_s": 0.616,
+          "us_per_frame_overhead": 6.16,
+          "ok": true,
+          "n_chunks": 100000
+        },
+        {
+          "mode": "B-ws-paced-100us",
+          "n_frames": 250000,
+          "wall_seconds": 26.252,
+          "server_overhead_s": 1.252,
+          "us_per_frame_overhead": 5.01,
+          "ok": true,
+          "n_chunks": 250000
+        }
+      ],
+      "scaling_exponent_mode_a": 1.0
+    },
+    {
+      "id": "py-uvicorn-wsproto",
+      "ecosystem": "python",
+      "name": "uvicorn (wsproto impl)",
+      "version": "uvicorn 0.32.1, wsproto 1.2.0, starlette 0.41.3",
+      "runtime": "python-3.13",
+      "concurrency_model": "event-loop",
+      "parser": "wsproto (pure-python sans-IO frame decoder)",
+      "delivery_granularity": "per-frame",
+      "verdict": "VULNERABLE-PER-FRAME",
+      "measurements": [
+        {
+          "mode": "A-ws-bridge",
+          "n_frames": 50000,
+          "wall_seconds_avg3": 0.717,
+          "us_per_frame": 14.35,
+          "ok": true,
+          "wall_seconds": 0.717,
+          "server_us_per_chunk": 14.35,
+          "n_chunks": 50000
+        },
+        {
+          "mode": "A-ws-bridge",
+          "n_frames": 100000,
+          "wall_seconds_avg3": 0.949,
+          "us_per_frame": 9.49,
+          "ok": true,
+          "wall_seconds": 0.949,
+          "server_us_per_chunk": 9.49,
+          "n_chunks": 100000
+        },
+        {
+          "mode": "A-ws-bridge",
+          "n_frames": 250000,
+          "wall_seconds_avg3": 2.538,
+          "us_per_frame": 10.15,
+          "ok": true,
+          "wall_seconds": 2.538,
+          "server_us_per_chunk": 10.15,
+          "n_chunks": 250000
+        },
+        {
+          "mode": "B-ws-paced-100us",
+          "n_frames": 50000,
+          "wall_seconds": 5.692,
+          "server_overhead_s": 0.692,
+          "us_per_frame_overhead": 13.84,
+          "ok": true,
+          "n_chunks": 50000
+        },
+        {
+          "mode": "B-ws-paced-100us",
+          "n_frames": 100000,
+          "wall_seconds": 11.319,
+          "server_overhead_s": 1.319,
+          "us_per_frame_overhead": 13.19,
+          "ok": true,
+          "n_chunks": 100000
+        },
+        {
+          "mode": "B-ws-paced-100us",
+          "n_frames": 250000,
+          "wall_seconds": 31.65,
+          "server_overhead_s": 6.65,
+          "us_per_frame_overhead": 26.6,
+          "ok": true,
+          "n_chunks": 250000
+        }
+      ],
+      "scaling_exponent_mode_a": 1.0
+    },
+    {
+      "id": "node-ws",
+      "ecosystem": "node",
+      "name": "ws (Node)",
+      "version": "ws 8.18.0 on node 22-slim",
+      "runtime": "node-22",
+      "concurrency_model": "event-loop",
+      "parser": "ws/lib/receiver.js (JS state machine; per-message event)",
+      "delivery_granularity": "per-recv-batched",
+      "verdict": "BATCHES-CORRECTLY",
+      "measurements": [
+        {
+          "mode": "A-ws-bridge",
+          "n_frames": 50000,
+          "wall_seconds_avg3": 0.024,
+          "us_per_frame": 0.49,
+          "ok": true,
+          "wall_seconds": 0.024,
+          "server_us_per_chunk": 0.49,
+          "n_chunks": 50000
+        },
+        {
+          "mode": "A-ws-bridge",
+          "n_frames": 100000,
+          "wall_seconds_avg3": 0.032,
+          "us_per_frame": 0.32,
+          "ok": true,
+          "wall_seconds": 0.032,
+          "server_us_per_chunk": 0.32,
+          "n_chunks": 100000
+        },
+        {
+          "mode": "A-ws-bridge",
+          "n_frames": 250000,
+          "wall_seconds_avg3": 0.058,
+          "us_per_frame": 0.23,
+          "ok": true,
+          "wall_seconds": 0.058,
+          "server_us_per_chunk": 0.23,
+          "n_chunks": 250000
+        },
+        {
+          "mode": "B-ws-paced-100us",
+          "n_frames": 50000,
+          "wall_seconds": 5.407,
+          "server_overhead_s": 0.407,
+          "us_per_frame_overhead": 8.15,
+          "ok": true,
+          "n_chunks": 50000
+        },
+        {
+          "mode": "B-ws-paced-100us",
+          "n_frames": 100000,
+          "wall_seconds": 10.491,
+          "server_overhead_s": 0.491,
+          "us_per_frame_overhead": 4.91,
+          "ok": true,
+          "n_chunks": 100000
+        },
+        {
+          "mode": "B-ws-paced-100us",
+          "n_frames": 250000,
+          "wall_seconds": 26.266,
+          "server_overhead_s": 1.266,
+          "us_per_frame_overhead": 5.06,
+          "ok": true,
+          "n_chunks": 250000
+        }
+      ],
+      "scaling_exponent_mode_a": 0.7
+    },
+    {
+      "id": "go-gorilla",
+      "ecosystem": "go",
+      "name": "gorilla/websocket",
+      "version": "v1.5.3 on go 1.23",
+      "runtime": "go-1.23",
+      "concurrency_model": "n-m-scheduler",
+      "parser": "gorilla NextReader (hand-rolled; per-frame goroutine yield)",
+      "delivery_granularity": "per-recv-batched",
+      "verdict": "BATCHES-CORRECTLY",
+      "measurements": [
+        {
+          "mode": "A-ws-bridge",
+          "n_frames": 50000,
+          "wall_seconds_avg3": 0.0067,
+          "us_per_frame": 0.13,
+          "ok": true,
+          "wall_seconds": 0.0067,
+          "server_us_per_chunk": 0.13,
+          "n_chunks": 50000
+        },
+        {
+          "mode": "A-ws-bridge",
+          "n_frames": 100000,
+          "wall_seconds_avg3": 0.0285,
+          "us_per_frame": 0.28,
+          "ok": true,
+          "wall_seconds": 0.0285,
+          "server_us_per_chunk": 0.28,
+          "n_chunks": 100000
+        },
+        {
+          "mode": "A-ws-bridge",
+          "n_frames": 250000,
+          "wall_seconds_avg3": 0.0603,
+          "us_per_frame": 0.24,
+          "ok": true,
+          "wall_seconds": 0.0603,
+          "server_us_per_chunk": 0.24,
+          "n_chunks": 250000
+        },
+        {
+          "mode": "B-ws-paced-100us",
+          "n_frames": 50000,
+          "wall_seconds": 5.244,
+          "server_overhead_s": 0.244,
+          "us_per_frame_overhead": 4.89,
+          "ok": true,
+          "n_chunks": 50000
+        },
+        {
+          "mode": "B-ws-paced-100us",
+          "n_frames": 100000,
+          "wall_seconds": 10.514,
+          "server_overhead_s": 0.514,
+          "us_per_frame_overhead": 5.14,
+          "ok": true,
+          "n_chunks": 100000
+        },
+        {
+          "mode": "B-ws-paced-100us",
+          "n_frames": 250000,
+          "wall_seconds": 26.397,
+          "server_overhead_s": 1.397,
+          "us_per_frame_overhead": 5.59,
+          "ok": true,
+          "n_chunks": 250000
+        }
+      ],
+      "scaling_exponent_mode_a": 0.9
+    },
+    {
+      "id": "rust-tungstenite",
+      "ecosystem": "rust",
+      "name": "tokio-tungstenite",
+      "version": "0.24 on rust 1.83",
+      "runtime": "rust-1.83",
+      "concurrency_model": "n-m-scheduler",
+      "parser": "tungstenite FrameCodec (manual buffered decode)",
+      "delivery_granularity": "per-recv-batched",
+      "verdict": "BATCHES-CORRECTLY",
+      "measurements": [
+        {
+          "mode": "A-ws-bridge",
+          "n_frames": 50000,
+          "wall_seconds_avg3": 0.0059,
+          "us_per_frame": 0.12,
+          "ok": true,
+          "wall_seconds": 0.0059,
+          "server_us_per_chunk": 0.12,
+          "n_chunks": 50000
+        },
+        {
+          "mode": "A-ws-bridge",
+          "n_frames": 100000,
+          "wall_seconds_avg3": 0.0077,
+          "us_per_frame": 0.08,
+          "ok": true,
+          "wall_seconds": 0.0077,
+          "server_us_per_chunk": 0.08,
+          "n_chunks": 100000
+        },
+        {
+          "mode": "A-ws-bridge",
+          "n_frames": 250000,
+          "wall_seconds_avg3": 0.0236,
+          "us_per_frame": 0.09,
+          "ok": true,
+          "wall_seconds": 0.0236,
+          "server_us_per_chunk": 0.09,
+          "n_chunks": 250000
+        },
+        {
+          "mode": "B-ws-paced-100us",
+          "n_frames": 50000,
+          "wall_seconds": 5.252,
+          "server_overhead_s": 0.252,
+          "us_per_frame_overhead": 5.04,
+          "ok": true,
+          "n_chunks": 50000
+        },
+        {
+          "mode": "B-ws-paced-100us",
+          "n_frames": 100000,
+          "wall_seconds": 10.647,
+          "server_overhead_s": 0.647,
+          "us_per_frame_overhead": 6.47,
+          "ok": true,
+          "n_chunks": 100000
+        },
+        {
+          "mode": "B-ws-paced-100us",
+          "n_frames": 250000,
+          "wall_seconds": 26.78,
+          "server_overhead_s": 1.78,
+          "us_per_frame_overhead": 7.12,
+          "ok": true,
+          "n_chunks": 250000
+        }
+      ],
+      "scaling_exponent_mode_a": 0.8
+    },
+    {
+      "id": "dotnet-kestrel",
+      "ecosystem": "dotnet",
+      "name": "Kestrel ASP.NET Core WebSockets",
+      "version": "ASP.NET Core 9.0 (mcr.microsoft.com/dotnet/aspnet:9.0); Microsoft.AspNetCore.WebSockets",
+      "runtime": "dotnet-9.0",
+      "concurrency_model": "thread-pool",
+      "parser": "ManagedWebSocket (System.Net.WebSockets) on System.IO.Pipelines",
+      "delivery_granularity": "per-recv-batched",
+      "verdict": "BATCHES-CORRECTLY",
+      "measurements": [
+        {
+          "mode": "A-ws-bridge",
+          "n_frames": 50000,
+          "wall_seconds_avg3": 0.0329,
+          "us_per_frame": 0.66,
+          "ok": true,
+          "wall_seconds": 0.0329,
+          "server_us_per_chunk": 0.66,
+          "n_chunks": 50000
+        },
+        {
+          "mode": "A-ws-bridge",
+          "n_frames": 100000,
+          "wall_seconds_avg3": 0.0797,
+          "us_per_frame": 0.8,
+          "ok": true,
+          "wall_seconds": 0.0797,
+          "server_us_per_chunk": 0.8,
+          "n_chunks": 100000
+        },
+        {
+          "mode": "A-ws-bridge",
+          "n_frames": 250000,
+          "wall_seconds_avg3": 0.0982,
+          "us_per_frame": 0.39,
+          "ok": true,
+          "wall_seconds": 0.0982,
+          "server_us_per_chunk": 0.39,
+          "n_chunks": 250000
+        },
+        {
+          "mode": "B-ws-paced-100us",
+          "n_frames": 50000,
+          "wall_seconds": 5.606,
+          "server_overhead_s": 0.606,
+          "us_per_frame_overhead": 12.12,
+          "ok": true,
+          "n_chunks": 50000
+        },
+        {
+          "mode": "B-ws-paced-100us",
+          "n_frames": 100000,
+          "wall_seconds": 10.922,
+          "server_overhead_s": 0.922,
+          "us_per_frame_overhead": 9.22,
+          "ok": true,
+          "n_chunks": 100000
+        },
+        {
+          "mode": "B-ws-paced-100us",
+          "n_frames": 250000,
+          "wall_seconds": 27.863,
+          "server_overhead_s": 2.863,
+          "us_per_frame_overhead": 11.45,
+          "ok": true,
+          "n_chunks": 250000
+        }
+      ],
+      "scaling_exponent_mode_a": 0.7
+    }
+  ]
+}

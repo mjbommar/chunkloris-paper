@@ -1,0 +1,38 @@
+services:
+  upstream:
+    build: ./upstream
+    container_name: napm_upstream
+    cpus: 1.0
+    expose:
+      - "8000"
+    networks:
+      - napm
+
+  nginx:
+    image: nginx:1.27-alpine
+    container_name: napm_nginx
+    cpus: 1.0
+    depends_on:
+      - upstream
+    volumes:
+      - ${NGINX_CONF:-./nginx/nginx-on.conf}:/etc/nginx/nginx.conf:ro
+    expose:
+      - "80"
+    networks:
+      - napm
+
+  prober:
+    build: ./prober
+    container_name: napm_prober
+    cpus: 1.0
+    depends_on:
+      - nginx
+    networks:
+      - napm
+    profiles:
+      - probe
+    command: ["--host", "nginx", "--port", "80", "--n", "50000"]
+
+networks:
+  napm:
+    driver: bridge

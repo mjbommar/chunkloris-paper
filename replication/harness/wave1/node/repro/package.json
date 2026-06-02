@@ -1,0 +1,9 @@
+{
+  "name": "asgi-survey-node",
+  "version": "1.0.0",
+  "private": true,
+  "dependencies": {
+    "express": "^5.1.0",
+    "fastify": "^5.2.1"
+  }
+}

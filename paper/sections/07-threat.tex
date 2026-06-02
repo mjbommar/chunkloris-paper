@@ -1,0 +1,159 @@
+\subsection{Attacker model}
+\label{sec:tm-model}
+
+We assume an attacker with:
+
+\begin{itemize}
+  \item the ability to open one or more TCP connections to the
+    target server (no authentication, no shared key),
+  \item the ability to send well-formed HTTP/1.1 requests with
+    arbitrary chunked-TE bodies,
+  \item modest egress bandwidth (KB/s, not MB/s; a single
+    residential broadband connection suffices),
+  \item no co-location requirement, no on-path position, no TLS
+    private key.
+\end{itemize}
+
+The attacker does not need to bypass authentication. Per the
+attack model (Section~\ref{sec:tm-reach}), the target endpoint is
+\emph{any} HTTP path that accepts a request body; for most
+deployments this includes unauthenticated paths.
+
+\subsection{Reachability}
+\label{sec:tm-reach}
+
+Per-chunk amplification is reachable on any HTTP/1.1 endpoint that
+accepts a request body, irrespective of method. POST, PUT, PATCH,
+and DELETE-with-body all trigger the parser. The endpoint does
+\emph{not} have to do anything with the body; even a handler that
+returns 401 / 403 immediately on auth failure has already paid the
+per-chunk cost by the time it inspects the body.
+
+This makes the attack reachable on:
+
+\begin{itemize}
+  \item unauthenticated APIs (chat-as-a-service, contact forms,
+    upload endpoints, webhook receivers, OAuth callback URLs),
+  \item authenticated APIs that begin reading the body before the
+    auth check completes (the default order in many ASGI / WSGI /
+    Servlet stacks),
+  \item any endpoint reached through a frontend that does not
+    aggregate (Section~\ref{sec:mit-frontend}: HAProxy, some CDN
+    configurations).
+\end{itemize}
+
+The wire pattern is RFC-compliant; intrusion detection systems
+keyed on protocol violations will not fire.
+
+\subsection{Cost-per-attacker-byte}
+\label{sec:tm-cost}
+
+Each one-byte chunk on the wire is 6 bytes
+(\texttt{1$\backslash$r$\backslash$nA$\backslash$r$\backslash$n}).
+For $N{=}\num{250000}$ chunks the attacker sends roughly 1.5 MB
+of wire bytes plus headers; the server costs are summarized
+in Table~\ref{tab:headline-costs}.
+
+\begin{table}[h]
+  \centering
+  \footnotesize
+  \caption{Per-request attacker bandwidth versus server CPU,
+  $N{=}\num{250000}$ one-byte chunks, Mode B (paced). Asymmetry
+  ratio is server-CPU-seconds per attacker-MB-on-wire (higher is
+  better for the attacker).}
+  \label{tab:headline-costs}
+  \begin{tabularx}{\linewidth}{@{}l r r r@{}}
+    \toprule
+    Server & Wire (MB) & Server CPU (s) & Asymmetry (s/MB) \\
+    \midrule
+    Kestrel 9                            & 1.5 & 0.9   & 0.6 \\
+    uvicorn + httptools                  & 1.5 & 0.5   & 0.3 \\
+    uvicorn + h11                        & 1.5 & 1.3   & 0.9 \\
+    Vert.x                               & 1.5 & 1.8   & 1.2 \\
+    Go net/http                          & 1.5 & 3.4   & 2.3 \\
+    Spring Boot / Tomcat                 & 1.5 & 5.3   & 3.5 \\
+    nginx as origin                      & 1.5 & 29    & 19  \\
+    bandit (QUADRATIC)                   & 1.5 & 42    & 28  \\
+    node \fwid{http.Server} (QUADRATIC)  & 1.5 & 282   & 188 \\
+    express (QUADRATIC)                  & 1.5 & 324   & 216 \\
+    \bottomrule
+  \end{tabularx}
+\end{table}
+
+A residential broadband uplink at \SI{20}{\mebi\bit\per\second}
+sustains roughly \SI{2.5}{\mebi\byte\per\second}, comfortably
+servicing one or two attacker connections per second. Against
+\fwid{express} (\(N{=}\num{250000}\), Mode A, extrapolated cell:
+324 s of server CPU per request), one such uplink sustained at
+one request per second per source IP draws several hundred
+server-CPU-seconds per wall-second from the target. For a target
+configured with $M$ Node workers, the cost equation is
+$M$ workers $\times$ available cores per worker; against an
+8-worker, 8-vCPU deployment the attacker must sustain
+\(\sim 8 \div 324 \times 8 \approx 0.2\) requests per second per
+worker to keep the deployment pinned. The attacker primitive is
+real but the "saturating any single-region deployment" claim
+requires a numeric derivation we leave for future work
+(Section~\ref{sec:future-work}).
+
+\subsection{Detection and evasion}
+\label{sec:tm-detect}
+
+\paragraph{Detection.}
+The attack signature on the wire is "request with
+\fname{Transfer-Encoding: chunked} and many small chunks." Most
+WAFs do not include a rule for this; most observability stacks log
+HTTP requests at the application layer (where the chunked-TE detail
+is lost) rather than at the L4 layer (where per-packet timing
+would expose it). The attack is functionally invisible to a
+default observability stack.
+
+A per-connection CPU-accounting layer (cgroup CPU controller, BPF
+per-cgroup timing) would expose the bug, but is not commonly
+deployed.
+
+\paragraph{Evasion.}
+A capable attacker can vary chunk size between 1 and a few bytes
+(keeping the per-chunk cost dominant but breaking signature-based
+detection on minimum chunk size). The attacker can rotate source
+IPs to dodge per-IP rate limits, and can interleave the malicious
+requests with legitimate-looking traffic on the same connection
+under HTTP keep-alive.
+
+\subsection{Combined attacks}
+\label{sec:tm-combined}
+
+The per-chunk amplification combines unfavorably with several
+adjacent vulnerabilities:
+
+\begin{itemize}
+  \item \emph{slow-loris on headers} (CWE-400 class): an attacker
+    can spend
+    seconds sending request headers slowly before chunked-TE body
+    parsing even begins, holding the connection-handling worker
+    in head-of-line block.
+  \item \emph{repeated-header coalescing} (Tornado
+    CVE-2025-67725, Django ASGI CVE-2025-14550): if the target
+    is also vulnerable to one of those, the same connection
+    can trigger both costs.
+  \item \emph{HTTP/2 multiplexing}: a single connection can carry
+    many concurrent streams, each carrying chunked-TE bodies, all
+    feeding the same per-chunk parser. We have not measured this
+    interaction (Section~\ref{sec:future}) but it likely amplifies
+    the per-connection cost by the maximum concurrent stream
+    count.
+\end{itemize}
+
+\subsection{Distributed amplification}
+\label{sec:tm-distributed}
+
+A botnet scales the attack linearly with attacker count. At the
+per-attacker rates above, a 100-IP botnet (trivial cost on
+commercial residential proxy services) sustained at one request
+per second per IP against an \fwid{express} target draws on the
+order of $100 \times 324 \approx 32{,}400$ server-CPU-seconds per
+wall-second, equivalent to pinning roughly 700 typical
+c5.4xlarge-equivalent cores. This is a substantial DDoS draw but
+does not categorically saturate a multi-region deployment; the
+saturation outcome depends on the target's worker fleet size
+and per-worker concurrency.

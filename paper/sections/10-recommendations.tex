@@ -1,0 +1,91 @@
+We organize recommendations by audience.
+
+\subsection{For server maintainers}
+\label{sec:rec-server}
+
+\begin{enumerate}
+  \item Adopt the Kestrel pump pattern by default. Concretely:
+    after \fname{recv()} returns, loop the chunked decoder
+    through every chunk available in the read buffer, then deliver
+    \emph{one} application-receive event with the concatenated
+    data bytes. Cap the per-event delivery by either total bytes
+    (a configurable limit, default
+    \SI{64}{\kibi\byte}) or time-since-last-flush (configurable,
+    default \SI{100}{\milli\second}). Whichever fires first
+    triggers the dispatch.
+  \item Expose an explicit \fname{streaming} mode for use cases
+    that genuinely need byte-by-byte delivery (video uploads,
+    long-poll-style hybrids). Make this opt-in.
+  \item Add a per-request chunk-count cap with a sensible default
+    (e.g., \num{4096} chunks per request) and a configuration
+    flag to raise it. This guards against the class even when
+    aggregation is disabled.
+  \item Publish a security-property summary in the server's
+    deployment documentation: what the chunked-TE handling
+    guarantees, what is on the operator, what is on the
+    application.
+\end{enumerate}
+
+\subsection{For application developers}
+\label{sec:rec-app}
+
+\begin{enumerate}
+  \item Deploy behind nginx or Apache httpd with default
+    \fname{proxy\_request\_buffering on} / \fname{ProxyIOBufferSize}.
+    This single configuration choice mitigates the class for the
+    upstream regardless of language ecosystem.
+  \item If the deployment cannot use such a frontend (single-node
+    HAProxy, direct-exposed app server, kubernetes ingress without
+    body buffering), write or import a middleware that counts
+    chunks per request and short-circuits with HTTP 413 or 408
+    beyond a threshold.
+  \item Set a body-byte cap (\fname{Content-Length} ceiling,
+    framework body-size limit) sized to your application's actual
+    needs.
+  \item Monitor per-request CPU. Alert on outliers exceeding
+    \(2\sigma\) of normal. The amplification produces clear
+    per-request CPU spikes that show up in any reasonable
+    request-level CPU-accounting metric.
+\end{enumerate}
+
+\subsection{For operators}
+\label{sec:rec-op}
+
+\begin{enumerate}
+  \item Audit the deployment: which servers are direct-exposed,
+    which are behind nginx / Apache / HAProxy / a CDN. Categorize
+    by Section~\ref{sec:mit-summary} mitigation tier.
+  \item For HAProxy-fronted services and direct-exposed services,
+    enable per-IP packet-rate limiting at the L4 layer
+    (\fname{nftables}, BPF). Set thresholds that catch slow-drip
+    without blocking legitimate slow uploaders.
+  \item For DDoS-protection vendors (Cloudflare, Akamai, Fastly):
+    request explicit confirmation in writing of whether chunked-TE
+    bodies are aggregated before forwarding to origin. The
+    public documentation is silent on this for most providers.
+  \item Set up an alert on per-process CPU breaching some
+    threshold for sustained time (e.g., one core saturated for
+    \(\geq 30\) seconds attributable to one connection). The
+    attack pattern is easy to spot in a process tree but invisible
+    in default access logs.
+\end{enumerate}
+
+\subsection{For protocol designers}
+\label{sec:rec-spec}
+
+\begin{enumerate}
+  \item Update RFC 9112 or its successor with non-normative
+    guidance on per-chunk delivery granularity, explicitly
+    blessing aggregation as spec-compliant. The current spec's
+    silence has resulted in fifteen years of independent
+    implementations all making the wrong default choice.
+  \item Standardize a chunk-count rate-limit negotiation
+    primitive at the protocol level (analogous to HTTP/2's
+    \fname{SETTINGS\_MAX\_HEADER\_LIST\_SIZE}). A client could
+    advertise "I will send at most $N$ chunks", and the server
+    could refuse connections that exceed it.
+  \item For HTTP/3 over QUIC, consider whether stream-level pacing
+    requirements can be tightened to make the same attack class
+    structurally impossible (QUIC streams have receiver-side
+    flow control but no chunk-count cap).
+\end{enumerate}
