@@ -23,12 +23,14 @@ TLS records buffer multiple bytes by their nature, which could
 incidentally aggregate chunked-TE chunks at the record boundary.
 We have not measured the magnitude.
 
-\paragraph{HTTP/2 and HTTP/3 not measured (Wave 1+2).}
-The 27 servers in our sample were measured under HTTP/1.1
-chunked-TE only. HTTP/2 uses DATA frames with explicit length
-fields; HTTP/3 uses QUIC streams with similar framing. Whether
-the per-chunk amplification class transfers, mitigates, or
-manifests differently under those protocols is unknown.
+\paragraph{HTTP/3 not measured.}
+The Wave 3 set extends the survey to HTTP/2 DATA frames and
+WebSocket text frames (Sections~\ref{sec:pf-h2}--\ref{sec:pf-ws}),
+but HTTP/3 over QUIC streams is not yet measured. HTTP/3's framing
+is similar to HTTP/2's DATA frames, so we expect the per-frame
+amplification class to transfer, but QUIC's separate flow-control
+and stream model could change the constant or the mitigation
+surface; we have not measured it.
 
 \paragraph{Cold start vs warm path.}
 JVM tests in particular include some JIT warm-up cost in the
@@ -41,16 +43,80 @@ The probability that real-world traffic includes per-chunk
 amplification attempts is unmeasured. We have not deployed
 honeypots or instrumented production servers.
 
+\subsection{Threats to validity}
+\label{sec:threats}
+
+We report the measurement-construct limitations explicitly; each
+notes the likely \emph{direction} of bias.
+
+\paragraph{Single run per cell (no confidence intervals).}
+Nearly every cell is $n{=}1$; we have no within-cell variance and
+report no confidence intervals. We therefore make no fine-grained
+ranking claims between servers whose per-chunk costs are within a
+small factor of each other. The order-of-magnitude separations we
+rely on (e.g.\ \fwid{nginx} $\sim\!100\times$ \fwid{uvicorn}; the
+Node quadratic vs.\ the linear pack) are robust to plausible
+run-to-run noise; sub-factor-of-two differences are not.
+
+\paragraph{CPU sampled via \fname{docker stats} snapshot.}
+Where we have CPU at all (64 of 203 cells), it is a single
+\fname{docker stats --no-stream} reading times the run duration,
+not an integral of \fname{cpuacct.usage}/\fname{cpu.stat}. This is
+noisier than integrating cgroup counters, can exceed
+\SI{100}{\percent} on a single pinned core, and degrades under
+host contention. We treat CPU figures as accurate to roughly the
+tens-of-percent level. A re-run should integrate \fname{cpu.stat}
+\texttt{usage\_usec} deltas instead.
+
+\paragraph{Wall time used where CPU is absent.}
+For the 139 CPU-less cells we report wall-derived per-chunk cost
+(Section~\ref{sec:method-metric}). On a saturated single-vCPU
+container wall $\approx$ CPU; otherwise wall \emph{over-counts}
+CPU by absorbing idle, network, and prober time. Direction of
+bias: wall $\geq$ CPU, so wall-derived numbers are upper bounds on
+server CPU. The quadratic headline figures (Node 282\,s) are wall
+on a fully-pinned, saturated core, and should be read as
+``single-core wall, $\approx$ CPU because saturated,'' not as
+independently measured CPU integrals.
+
+\paragraph{Single co-located host; prober/SUT contention.}
+Prober and server run on one host. Mode~B's prober busy-waits
+(\SI{100}{\micro\second} CPU spin per chunk) on the same machine
+as the 1-vCPU server-under-test; if they share a core, prober
+spin steals cycles and \emph{inflates} server wall time. Direction
+of bias: server wall time biased upward.
+
+\paragraph{CFS quota vs.\ dedicated core.}
+\texttt{--cpus=1} imposes a CFS bandwidth quota (\SI{100}{\milli\second}
+period), not a dedicated physical core (\texttt{--cpuset-cpus}).
+Under quota a CPU-bound run is throttled at period boundaries,
+adding wall time that is not server work. Direction of bias:
+inflates Mode~B wall (and wall-derived per-chunk cost) relative to
+a dedicated core; CPU-percentage figures are less affected.
+
+\paragraph{Version pinning and host metadata gaps.}
+Several rows omit the exact runtime/version, and the published
+dataset does not populate host CPU/kernel metadata, so cross-host
+reproducibility is not fully specified. Direction of bias: none on
+relative results, but absolute microsecond figures are
+host-specific and not portable.
+
 \subsection{Future work}
 \label{sec:future-work}
 
-\paragraph{Wave 3: HTTP/2, HTTP/3, WebSocket, gRPC.}
-We plan to measure the same 27 servers under HTTP/2 multiplexed
-DATA frames, HTTP/3 over QUIC streams, WebSocket per-frame
-amplification, and gRPC streaming. Preliminary expectation: the
-class transfers to all four, with HTTP/2 \emph{worsening} the
-per-connection cost via stream multiplexing and HTTP/3 partially
-mitigating via QUIC's flow control.
+\paragraph{HTTP/3, gRPC, and HTTP/2 stream multiplexing.}
+Wave 3 has measured HTTP/2 multiplexed DATA frames and WebSocket
+per-frame amplification (Sections~\ref{sec:pf-h2}--\ref{sec:pf-ws});
+every HTTP/2 server inherits the per-frame tax, and 4 of 6
+WebSocket servers batch correctly. Remaining for future work are
+HTTP/3 over QUIC streams and gRPC streaming. A separate, important
+gap is the \emph{multiplexed} HTTP/2 attack: our harness sends one
+stream per connection, but a single connection can carry the
+maximum concurrent stream count, each stream feeding the same
+per-frame parser. We expect this to multiply the per-connection
+cost by the stream-concurrency limit and to defeat per-IP
+connection caps; quantifying it is the most consequential
+measurement we have not yet run.
 
 \paragraph{Multipart per-part amplification.}
 \fwid{multipart/form-data} is structurally similar: each part has

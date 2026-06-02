@@ -93,7 +93,7 @@ application handler.
 
   \end{tikzpicture}
 
-  \caption{Three structural classes observed across 27 servers.
+  \caption{Three structural classes observed across the 27 HTTP/1.1 servers.
   (a)~\emph{per-chunk}: the chunked decoder dispatches one
   application receive event per chunk; the cost is N task-switches.
   (b)~\emph{batches-correctly} (Kestrel /
@@ -104,18 +104,17 @@ application handler.
   \fname{async}/\fname{await} boundary.
   (c)~\emph{quadratic}: each per-chunk dispatch additionally
   walks an accumulator whose size grows with N, giving
-  $\Theta(N^2)$ total work. Both Node's
-  \fname{maybeReadMore}-driven microtask queue and Bandit's
-  \fname{erlang:iolist\_size/1} walk fit this pattern via
-  different concrete mechanisms.}
+  $\Theta(N^2)$ total work. In our sample, the three Node
+  \fwid{http.Server}-based servers fit this $\Theta(N^2)$ pattern
+  via the \fname{maybeReadMore}-driven microtask queue.}
   \label{fig:arch-three-classes}
 \end{figure*}
 
 \subsection{Three cost mechanisms}
 \label{sec:rc-mechanisms}
 
-We observe three distinct cost mechanisms across the 22
-VULNERABLE-PER-CHUNK + 4 QUADRATIC servers.
+We observe three distinct cost mechanisms across the 23
+VULNERABLE-PER-CHUNK + 3 QUADRATIC servers.
 
 \paragraph{Mechanism A: dispatcher-bound (most servers).}
 The parser is fast; the cost is the per-chunk dispatch event.
@@ -137,37 +136,37 @@ handoff per chunk. The
 visible in \fname{async-profiler} adds $\sim$\SI{14}{\micro\second}
 on top of the underlying \fname{ChunkedInputFilter.parseChunkHeader}
 cost. Total $\sim$\SI{21}{\micro\second}/chunk -- the worst
-linear cell in our sample at $N{=}\num{250000}$ once nginx-as-origin
-is excluded.
+linear cell among the conventional servers at $N{=}\num{250000}$,
+once the two high-constant outliers (the \fwid{bandit} iolist walk
+at $\sim$\SI{138}{\micro\second} and the synthetic nginx-as-origin
+cell at $\sim$\SI{114}{\micro\second}) are set aside.
 
-\paragraph{Mechanism C: superlinear accumulator (Node, Bandit).}
+\paragraph{Mechanism C: superlinear accumulator (Node).}
 Some servers carry per-chunk \emph{state} that itself grows with
 the number of chunks already received. When the per-chunk
-operation has to inspect that state, the total work becomes
-quadratic.
+operation has to inspect that state, the total work can become
+quadratic. In our sample this manifests in the three Node
+\fwid{http.Server}-based servers: the \fname{maybeReadMore} ->
+\fname{process.nextTick} chain schedules a callback per chunk;
+each scheduled callback drains some prefix of the microtask
+queue; the queue grows with the number of pushed chunks, the
+drain work per scheduled callback grows similarly, and total
+work is $\Theta(N^2)$ (measured exponent $\sim 1.7$--$2.0$).
 
-\begin{itemize}
-  \item Node: the \fname{maybeReadMore} -> \fname{process.nextTick}
-    chain schedules a callback per chunk. Each scheduled callback
-    drains some prefix of the microtask queue. The queue grows
-    with the number of pushed chunks; the drain work per scheduled
-    callback grows similarly; total work is
-    $\Theta(N^2)$.
-  \item Bandit: \fname{do\_read\_chunk!/4} calls
-    \fname{erlang:iolist\_size/1} on the accumulating iolist on
-    every chunk to update progress; the iolist walk is $\Theta(M)$
-    where $M$ is the already-accumulated body, summed over $N$
-    chunks gives $\Theta(N^2)$. (Adjacent prior art:
-    CVE-2026-7790~\cite{cve_2026_7790_cowlib} in
-    \fwid{cowlib}'s chunk-size hex parser is a different
-    quadratic in the same library family.)
-\end{itemize}
-
-These two examples are mechanistically unrelated (JavaScript
-microtask queue vs Erlang iolist walk) but produce the same
-asymptotic shape, indicating that the "per-chunk operation
-walks accumulated state" anti-pattern is not unique to one
-runtime.
+\fwid{Bandit} exhibits a structurally similar "per-chunk
+operation walks accumulated state" pattern --
+\fname{do\_read\_chunk!/4} calls \fname{erlang:iolist\_size/1}
+on the accumulating iolist on every chunk (89.3\% of CPU in the
+\fname{:eprof} sample) -- but in our $N$ range the cost does
+\emph{not} grow quadratically: the measured exponent is
+$\sim 1.05$ and per-chunk cost \emph{falls} with $N$
+(155\,$\to$\,138\,\si{\micro\second}/chunk under Mode B),
+indicating Bandit chunks the accumulator in a way that keeps the
+per-chunk walk bounded over this range. We therefore treat
+Bandit as a high-constant linear case, not a quadratic one.
+(Adjacent prior art: CVE-2026-7790~\cite{cve_2026_7790_cowlib}
+in \fwid{cowlib}'s chunk-size hex parser is a genuine quadratic
+in the same library family.)
 
 \subsection{Why Kestrel avoids both mechanisms}
 \label{sec:rc-kestrel}
@@ -193,9 +192,11 @@ dominated entirely by the synchronous parser loop, with no
 runtime tax on top.
 
 The Pipelines design is publicly documented and predates the
-security framing of this bug class. It is, to our knowledge, the
-only production HTTP server in widespread use that adopts this
-pattern as a default.
+security framing of this bug class. Among HTTP/1.1 servers it is,
+to our knowledge, the only production server in widespread use
+that adopts this pattern as a default; four WebSocket
+implementations (Section~\ref{sec:pf-ws}) independently arrive at
+the same drain-before-dispatch design.
 
 \subsection{Why batching is spec-compliant}
 \label{sec:rc-spec}

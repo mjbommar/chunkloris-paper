@@ -104,6 +104,7 @@
       \strng{authornamehash}{ed5f36b0c6246bf884830c7836478e39}
       \strng{authorfullhash}{ed5f36b0c6246bf884830c7836478e39}
       \strng{authorfullhashraw}{ed5f36b0c6246bf884830c7836478e39}
+      \field{extraname}{1}
       \field{sortinit}{6}
       \field{sortinithash}{b33bc299efb3c36abec520a4c896a66d}
       \field{labelnamesource}{author}
@@ -245,6 +246,449 @@
       \field{title}{{Apache Tomcat chunk-size integer overflow}}
       \field{year}{2014}
     \endentry
+    \entry{slowloris}{misc}{}{}
+      \name{author}{1}{}{%
+        {{hash=ca82103afedc25016dcee8a6aaaa701c}{%
+           family={(RSnake)},
+           familyi={(\bibinitperiod},
+           given={Robert\bibnamedelima Hansen},
+           giveni={R\bibinitperiod\bibinitdelim H\bibinitperiod}}}%
+      }
+      \strng{namehash}{ca82103afedc25016dcee8a6aaaa701c}
+      \strng{fullhash}{ca82103afedc25016dcee8a6aaaa701c}
+      \strng{fullhashraw}{ca82103afedc25016dcee8a6aaaa701c}
+      \strng{bibnamehash}{ca82103afedc25016dcee8a6aaaa701c}
+      \strng{authorbibnamehash}{ca82103afedc25016dcee8a6aaaa701c}
+      \strng{authornamehash}{ca82103afedc25016dcee8a6aaaa701c}
+      \strng{authorfullhash}{ca82103afedc25016dcee8a6aaaa701c}
+      \strng{authorfullhashraw}{ca82103afedc25016dcee8a6aaaa701c}
+      \field{sortinit}{1}
+      \field{sortinithash}{4f6aaa89bab872aa0999fec09ff8e98a}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{howpublished}{ha.ckers.org (orig.); archived tool}
+      \field{note}{Low-bandwidth, connection-slot-exhaustion HTTP DoS tool}
+      \field{title}{{Slowloris HTTP DoS}}
+      \field{year}{2009}
+      \verb{urlraw}
+      \verb https://github.com/XCHADXFAQ77X/SLOWLORIS
+      \endverb
+      \verb{url}
+      \verb https://github.com/XCHADXFAQ77X/SLOWLORIS
+      \endverb
+    \endentry
+    \entry{rudy}{misc}{}{}
+      \name{author}{1}{}{%
+        {{hash=24b95a7fdad5a850196cd87546dcc70b}{%
+           family={{OWASP}},
+           familyi={O\bibinitperiod}}}%
+      }
+      \strng{namehash}{24b95a7fdad5a850196cd87546dcc70b}
+      \strng{fullhash}{24b95a7fdad5a850196cd87546dcc70b}
+      \strng{fullhashraw}{24b95a7fdad5a850196cd87546dcc70b}
+      \strng{bibnamehash}{24b95a7fdad5a850196cd87546dcc70b}
+      \strng{authorbibnamehash}{24b95a7fdad5a850196cd87546dcc70b}
+      \strng{authornamehash}{24b95a7fdad5a850196cd87546dcc70b}
+      \strng{authorfullhash}{24b95a7fdad5a850196cd87546dcc70b}
+      \strng{authorfullhashraw}{24b95a7fdad5a850196cd87546dcc70b}
+      \field{sortinit}{1}
+      \field{sortinithash}{4f6aaa89bab872aa0999fec09ff8e98a}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{howpublished}{OWASP Foundation}
+      \field{note}{Slow-POST variant of the Slowloris connection-exhaustion family}
+      \field{title}{{R-U-Dead-Yet (RUDY): slow HTTP POST denial of service}}
+      \verb{urlraw}
+      \verb https://owasp.org/www-community/attacks/Slow_HTTP_Attacks
+      \endverb
+      \verb{url}
+      \verb https://owasp.org/www-community/attacks/Slow_HTTP_Attacks
+      \endverb
+    \endentry
+    \entry{cambiaso_survey}{article}{}{}
+      \name{author}{4}{}{%
+        {{hash=0a3eab0db66d3e581f48e1198cc273cf}{%
+           family={Cambiaso},
+           familyi={C\bibinitperiod},
+           given={Enrico},
+           giveni={E\bibinitperiod}}}%
+        {{hash=82aa17b02ad472e952b05b5e43a64a1c}{%
+           family={Papaleo},
+           familyi={P\bibinitperiod},
+           given={Gianluca},
+           giveni={G\bibinitperiod}}}%
+        {{hash=8fdc1e45654af548d491335a182b9aba}{%
+           family={Chiola},
+           familyi={C\bibinitperiod},
+           given={Giovanni},
+           giveni={G\bibinitperiod}}}%
+        {{hash=4146ae792ee29a87de655264b0b80670}{%
+           family={Aiello},
+           familyi={A\bibinitperiod},
+           given={Maurizio},
+           giveni={M\bibinitperiod}}}%
+      }
+      \strng{namehash}{bc6eb039970a33db9afe8f2faba2f77f}
+      \strng{fullhash}{f1470b5129c78022f7f023924cc0be89}
+      \strng{fullhashraw}{f1470b5129c78022f7f023924cc0be89}
+      \strng{bibnamehash}{f1470b5129c78022f7f023924cc0be89}
+      \strng{authorbibnamehash}{f1470b5129c78022f7f023924cc0be89}
+      \strng{authornamehash}{bc6eb039970a33db9afe8f2faba2f77f}
+      \strng{authorfullhash}{f1470b5129c78022f7f023924cc0be89}
+      \strng{authorfullhashraw}{f1470b5129c78022f7f023924cc0be89}
+      \field{sortinit}{1}
+      \field{sortinithash}{4f6aaa89bab872aa0999fec09ff8e98a}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{journaltitle}{International Journal of Trust Management in Computing and Communications}
+      \field{number}{3/4}
+      \field{title}{{Slow DoS attacks: definition and categorisation}}
+      \field{volume}{1}
+      \field{year}{2013}
+      \field{pages}{300\bibrangedash 319}
+      \range{pages}{20}
+      \verb{doi}
+      \verb 10.1504/IJTMCC.2013.056440
+      \endverb
+      \verb{urlraw}
+      \verb https://dblp.org/rec/journals/ijtmcc/CambiasoPCA13.html
+      \endverb
+      \verb{url}
+      \verb https://dblp.org/rec/journals/ijtmcc/CambiasoPCA13.html
+      \endverb
+    \endentry
+    \entry{crosby2003}{inproceedings}{}{}
+      \name{author}{2}{}{%
+        {{hash=8a26431d96e9c25fe10061cfac208082}{%
+           family={Crosby},
+           familyi={C\bibinitperiod},
+           given={Scott\bibnamedelima A.},
+           giveni={S\bibinitperiod\bibinitdelim A\bibinitperiod}}}%
+        {{hash=ccdabeaeaea069c5504cc19de9e374ba}{%
+           family={Wallach},
+           familyi={W\bibinitperiod},
+           given={Dan\bibnamedelima S.},
+           giveni={D\bibinitperiod\bibinitdelim S\bibinitperiod}}}%
+      }
+      \list{publisher}{1}{%
+        {USENIX Association}%
+      }
+      \strng{namehash}{b1e8f6b83a36d4e00e40c746bad0f595}
+      \strng{fullhash}{b1e8f6b83a36d4e00e40c746bad0f595}
+      \strng{fullhashraw}{b1e8f6b83a36d4e00e40c746bad0f595}
+      \strng{bibnamehash}{b1e8f6b83a36d4e00e40c746bad0f595}
+      \strng{authorbibnamehash}{b1e8f6b83a36d4e00e40c746bad0f595}
+      \strng{authornamehash}{b1e8f6b83a36d4e00e40c746bad0f595}
+      \strng{authorfullhash}{b1e8f6b83a36d4e00e40c746bad0f595}
+      \strng{authorfullhashraw}{b1e8f6b83a36d4e00e40c746bad0f595}
+      \field{sortinit}{1}
+      \field{sortinithash}{4f6aaa89bab872aa0999fec09ff8e98a}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{booktitle}{Proceedings of the 12th USENIX Security Symposium}
+      \field{title}{{Denial of Service via Algorithmic Complexity Attacks}}
+      \field{year}{2003}
+      \verb{urlraw}
+      \verb https://www.usenix.org/conference/12th-usenix-security-symposium/denial-service-algorithmic-complexity-attacks
+      \endverb
+      \verb{url}
+      \verb https://www.usenix.org/conference/12th-usenix-security-symposium/denial-service-algorithmic-complexity-attacks
+      \endverb
+    \endentry
+    \entry{cwe405}{misc}{}{}
+      \name{author}{1}{}{%
+        {{hash=ed5f36b0c6246bf884830c7836478e39}{%
+           family={{MITRE}},
+           familyi={M\bibinitperiod}}}%
+      }
+      \strng{namehash}{ed5f36b0c6246bf884830c7836478e39}
+      \strng{fullhash}{ed5f36b0c6246bf884830c7836478e39}
+      \strng{fullhashraw}{ed5f36b0c6246bf884830c7836478e39}
+      \strng{bibnamehash}{ed5f36b0c6246bf884830c7836478e39}
+      \strng{authorbibnamehash}{ed5f36b0c6246bf884830c7836478e39}
+      \strng{authornamehash}{ed5f36b0c6246bf884830c7836478e39}
+      \strng{authorfullhash}{ed5f36b0c6246bf884830c7836478e39}
+      \strng{authorfullhashraw}{ed5f36b0c6246bf884830c7836478e39}
+      \field{extraname}{2}
+      \field{sortinit}{1}
+      \field{sortinithash}{4f6aaa89bab872aa0999fec09ff8e98a}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{howpublished}{Common Weakness Enumeration}
+      \field{title}{{CWE-405: Asymmetric Resource Consumption (Amplification)}}
+      \verb{urlraw}
+      \verb https://cwe.mitre.org/data/definitions/405.html
+      \endverb
+      \verb{url}
+      \verb https://cwe.mitre.org/data/definitions/405.html
+      \endverb
+    \endentry
+    \entry{cwe400}{misc}{}{}
+      \name{author}{1}{}{%
+        {{hash=ed5f36b0c6246bf884830c7836478e39}{%
+           family={{MITRE}},
+           familyi={M\bibinitperiod}}}%
+      }
+      \strng{namehash}{ed5f36b0c6246bf884830c7836478e39}
+      \strng{fullhash}{ed5f36b0c6246bf884830c7836478e39}
+      \strng{fullhashraw}{ed5f36b0c6246bf884830c7836478e39}
+      \strng{bibnamehash}{ed5f36b0c6246bf884830c7836478e39}
+      \strng{authorbibnamehash}{ed5f36b0c6246bf884830c7836478e39}
+      \strng{authornamehash}{ed5f36b0c6246bf884830c7836478e39}
+      \strng{authorfullhash}{ed5f36b0c6246bf884830c7836478e39}
+      \strng{authorfullhashraw}{ed5f36b0c6246bf884830c7836478e39}
+      \field{extraname}{3}
+      \field{sortinit}{1}
+      \field{sortinithash}{4f6aaa89bab872aa0999fec09ff8e98a}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{howpublished}{Common Weakness Enumeration}
+      \field{title}{{CWE-400: Uncontrolled Resource Consumption}}
+      \verb{urlraw}
+      \verb https://cwe.mitre.org/data/definitions/400.html
+      \endverb
+      \verb{url}
+      \verb https://cwe.mitre.org/data/definitions/400.html
+      \endverb
+    \endentry
+    \entry{rapidreset2023}{misc}{}{}
+      \name{author}{1}{}{%
+        {{hash=57664851f3ad6b5a27c52ddaf07aa40d}{%
+           family={{NIST National Vulnerability Database}},
+           familyi={N\bibinitperiod}}}%
+      }
+      \strng{namehash}{57664851f3ad6b5a27c52ddaf07aa40d}
+      \strng{fullhash}{57664851f3ad6b5a27c52ddaf07aa40d}
+      \strng{fullhashraw}{57664851f3ad6b5a27c52ddaf07aa40d}
+      \strng{bibnamehash}{57664851f3ad6b5a27c52ddaf07aa40d}
+      \strng{authorbibnamehash}{57664851f3ad6b5a27c52ddaf07aa40d}
+      \strng{authornamehash}{57664851f3ad6b5a27c52ddaf07aa40d}
+      \strng{authorfullhash}{57664851f3ad6b5a27c52ddaf07aa40d}
+      \strng{authorfullhashraw}{57664851f3ad6b5a27c52ddaf07aa40d}
+      \field{extraname}{1}
+      \field{sortinit}{1}
+      \field{sortinithash}{4f6aaa89bab872aa0999fec09ff8e98a}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{howpublished}{CVE-2023-44487}
+      \field{title}{{CVE-2023-44487: HTTP/2 Rapid Reset}}
+      \field{year}{2023}
+      \verb{urlraw}
+      \verb https://nvd.nist.gov/vuln/detail/CVE-2023-44487
+      \endverb
+      \verb{url}
+      \verb https://nvd.nist.gov/vuln/detail/CVE-2023-44487
+      \endverb
+    \endentry
+    \entry{rapidreset_cloudflare}{misc}{}{}
+      \name{author}{2}{}{%
+        {{hash=dce6ef630f867dc9dc6f1318123aa476}{%
+           family={Pardue},
+           familyi={P\bibinitperiod},
+           given={Lucas},
+           giveni={L\bibinitperiod}}}%
+        {{hash=8f975f89f286782c4951bfb76b0d9024}{%
+           family={Desgats},
+           familyi={D\bibinitperiod},
+           given={Julien},
+           giveni={J\bibinitperiod}}}%
+      }
+      \strng{namehash}{6ead5f5494c6d9fe75d6bdb373695b16}
+      \strng{fullhash}{6ead5f5494c6d9fe75d6bdb373695b16}
+      \strng{fullhashraw}{6ead5f5494c6d9fe75d6bdb373695b16}
+      \strng{bibnamehash}{6ead5f5494c6d9fe75d6bdb373695b16}
+      \strng{authorbibnamehash}{6ead5f5494c6d9fe75d6bdb373695b16}
+      \strng{authornamehash}{6ead5f5494c6d9fe75d6bdb373695b16}
+      \strng{authorfullhash}{6ead5f5494c6d9fe75d6bdb373695b16}
+      \strng{authorfullhashraw}{6ead5f5494c6d9fe75d6bdb373695b16}
+      \field{sortinit}{1}
+      \field{sortinithash}{4f6aaa89bab872aa0999fec09ff8e98a}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{howpublished}{Cloudflare Blog}
+      \field{title}{{HTTP/2 Zero-Day vulnerability results in record-breaking DDoS attacks}}
+      \field{year}{2023}
+      \verb{urlraw}
+      \verb https://blog.cloudflare.com/zero-day-rapid-reset-http2-record-breaking-ddos-attack/
+      \endverb
+      \verb{url}
+      \verb https://blog.cloudflare.com/zero-day-rapid-reset-http2-record-breaking-ddos-attack/
+      \endverb
+    \endentry
+    \entry{continuation2024}{misc}{}{}
+      \name{author}{1}{}{%
+        {{hash=57664851f3ad6b5a27c52ddaf07aa40d}{%
+           family={{NIST National Vulnerability Database}},
+           familyi={N\bibinitperiod}}}%
+      }
+      \strng{namehash}{57664851f3ad6b5a27c52ddaf07aa40d}
+      \strng{fullhash}{57664851f3ad6b5a27c52ddaf07aa40d}
+      \strng{fullhashraw}{57664851f3ad6b5a27c52ddaf07aa40d}
+      \strng{bibnamehash}{57664851f3ad6b5a27c52ddaf07aa40d}
+      \strng{authorbibnamehash}{57664851f3ad6b5a27c52ddaf07aa40d}
+      \strng{authornamehash}{57664851f3ad6b5a27c52ddaf07aa40d}
+      \strng{authorfullhash}{57664851f3ad6b5a27c52ddaf07aa40d}
+      \strng{authorfullhashraw}{57664851f3ad6b5a27c52ddaf07aa40d}
+      \field{extraname}{2}
+      \field{sortinit}{2}
+      \field{sortinithash}{8b555b3791beccb63322c22f3320aa9a}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{howpublished}{CVE-2024-27316}
+      \field{title}{{CVE-2024-27316: Apache HTTP Server HTTP/2 DoS by memory exhaustion on endless CONTINUATION frames}}
+      \field{year}{2024}
+      \verb{urlraw}
+      \verb https://nvd.nist.gov/vuln/detail/CVE-2024-27316
+      \endverb
+      \verb{url}
+      \verb https://nvd.nist.gov/vuln/detail/CVE-2024-27316
+      \endverb
+    \endentry
+    \entry{continuation_nowotarski}{misc}{}{}
+      \name{author}{1}{}{%
+        {{hash=6df29f33dff0758e756328c956989e10}{%
+           family={Nowotarski},
+           familyi={N\bibinitperiod},
+           given={Bart{ł}omiej},
+           giveni={B\bibinitperiod}}}%
+      }
+      \strng{namehash}{6df29f33dff0758e756328c956989e10}
+      \strng{fullhash}{6df29f33dff0758e756328c956989e10}
+      \strng{fullhashraw}{6df29f33dff0758e756328c956989e10}
+      \strng{bibnamehash}{6df29f33dff0758e756328c956989e10}
+      \strng{authorbibnamehash}{6df29f33dff0758e756328c956989e10}
+      \strng{authornamehash}{6df29f33dff0758e756328c956989e10}
+      \strng{authorfullhash}{6df29f33dff0758e756328c956989e10}
+      \strng{authorfullhashraw}{6df29f33dff0758e756328c956989e10}
+      \field{sortinit}{2}
+      \field{sortinithash}{8b555b3791beccb63322c22f3320aa9a}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{howpublished}{nowotarski.info}
+      \field{title}{{HTTP/2 CONTINUATION Flood}}
+      \field{year}{2024}
+      \verb{urlraw}
+      \verb https://nowotarski.info/http2-continuation-flood/
+      \endverb
+      \verb{url}
+      \verb https://nowotarski.info/http2-continuation-flood/
+      \endverb
+    \endentry
+    \entry{madeyoureset}{misc}{}{}
+      \name{author}{1}{}{%
+        {{hash=57664851f3ad6b5a27c52ddaf07aa40d}{%
+           family={{NIST National Vulnerability Database}},
+           familyi={N\bibinitperiod}}}%
+      }
+      \strng{namehash}{57664851f3ad6b5a27c52ddaf07aa40d}
+      \strng{fullhash}{57664851f3ad6b5a27c52ddaf07aa40d}
+      \strng{fullhashraw}{57664851f3ad6b5a27c52ddaf07aa40d}
+      \strng{bibnamehash}{57664851f3ad6b5a27c52ddaf07aa40d}
+      \strng{authorbibnamehash}{57664851f3ad6b5a27c52ddaf07aa40d}
+      \strng{authornamehash}{57664851f3ad6b5a27c52ddaf07aa40d}
+      \strng{authorfullhash}{57664851f3ad6b5a27c52ddaf07aa40d}
+      \strng{authorfullhashraw}{57664851f3ad6b5a27c52ddaf07aa40d}
+      \field{extraname}{3}
+      \field{sortinit}{2}
+      \field{sortinithash}{8b555b3791beccb63322c22f3320aa9a}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{howpublished}{CVE-2025-8671}
+      \field{title}{{CVE-2025-8671: HTTP/2 MadeYouReset DoS via control frames}}
+      \field{year}{2025}
+      \verb{urlraw}
+      \verb https://nvd.nist.gov/vuln/detail/CVE-2025-8671
+      \endverb
+      \verb{url}
+      \verb https://nvd.nist.gov/vuln/detail/CVE-2025-8671
+      \endverb
+    \endentry
+    \entry{madeyoureset_cert}{misc}{}{}
+      \name{author}{1}{}{%
+        {{hash=4ba3150bbad040c787e6b46170b1af1f}{%
+           family={{CERT Coordination Center}},
+           familyi={C\bibinitperiod}}}%
+      }
+      \strng{namehash}{4ba3150bbad040c787e6b46170b1af1f}
+      \strng{fullhash}{4ba3150bbad040c787e6b46170b1af1f}
+      \strng{fullhashraw}{4ba3150bbad040c787e6b46170b1af1f}
+      \strng{bibnamehash}{4ba3150bbad040c787e6b46170b1af1f}
+      \strng{authorbibnamehash}{4ba3150bbad040c787e6b46170b1af1f}
+      \strng{authornamehash}{4ba3150bbad040c787e6b46170b1af1f}
+      \strng{authorfullhash}{4ba3150bbad040c787e6b46170b1af1f}
+      \strng{authorfullhashraw}{4ba3150bbad040c787e6b46170b1af1f}
+      \field{sortinit}{2}
+      \field{sortinithash}{8b555b3791beccb63322c22f3320aa9a}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{howpublished}{CERT/CC Vulnerability Note}
+      \field{title}{{VU\#767506: HTTP/2 implementations vulnerable to ``MadeYouReset'' DoS through HTTP/2 control frames}}
+      \field{year}{2025}
+      \verb{urlraw}
+      \verb https://kb.cert.org/vuls/id/767506
+      \endverb
+      \verb{url}
+      \verb https://kb.cert.org/vuls/id/767506
+      \endverb
+    \endentry
+    \entry{calif_http2bomb}{misc}{}{}
+      \name{author}{1}{}{%
+        {{hash=6c85886b5e363723efe5bf0c9919584d}{%
+           family={{Calif.io}},
+           familyi={C\bibinitperiod}}}%
+      }
+      \strng{namehash}{6c85886b5e363723efe5bf0c9919584d}
+      \strng{fullhash}{6c85886b5e363723efe5bf0c9919584d}
+      \strng{fullhashraw}{6c85886b5e363723efe5bf0c9919584d}
+      \strng{bibnamehash}{6c85886b5e363723efe5bf0c9919584d}
+      \strng{authorbibnamehash}{6c85886b5e363723efe5bf0c9919584d}
+      \strng{authornamehash}{6c85886b5e363723efe5bf0c9919584d}
+      \strng{authorfullhash}{6c85886b5e363723efe5bf0c9919584d}
+      \strng{authorfullhashraw}{6c85886b5e363723efe5bf0c9919584d}
+      \field{sortinit}{2}
+      \field{sortinithash}{8b555b3791beccb63322c22f3320aa9a}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{howpublished}{Calif.io Blog}
+      \field{title}{{Codex Discovered a Hidden HTTP/2 Bomb}}
+      \field{year}{2025}
+      \verb{urlraw}
+      \verb https://blog.calif.io/p/codex-discovered-a-hidden-http2-bomb
+      \endverb
+      \verb{url}
+      \verb https://blog.calif.io/p/codex-discovered-a-hidden-http2-bomb
+      \endverb
+    \endentry
+    \entry{kettle_desync}{misc}{}{}
+      \name{author}{1}{}{%
+        {{hash=b7ec041883bbbd97cfd9ee743d8329ce}{%
+           family={Kettle},
+           familyi={K\bibinitperiod},
+           given={James},
+           giveni={J\bibinitperiod}}}%
+      }
+      \strng{namehash}{b7ec041883bbbd97cfd9ee743d8329ce}
+      \strng{fullhash}{b7ec041883bbbd97cfd9ee743d8329ce}
+      \strng{fullhashraw}{b7ec041883bbbd97cfd9ee743d8329ce}
+      \strng{bibnamehash}{b7ec041883bbbd97cfd9ee743d8329ce}
+      \strng{authorbibnamehash}{b7ec041883bbbd97cfd9ee743d8329ce}
+      \strng{authornamehash}{b7ec041883bbbd97cfd9ee743d8329ce}
+      \strng{authorfullhash}{b7ec041883bbbd97cfd9ee743d8329ce}
+      \strng{authorfullhashraw}{b7ec041883bbbd97cfd9ee743d8329ce}
+      \field{sortinit}{2}
+      \field{sortinithash}{8b555b3791beccb63322c22f3320aa9a}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{howpublished}{PortSwigger Research (Black Hat USA 2019)}
+      \field{title}{{HTTP Desync Attacks: Request Smuggling Reborn}}
+      \field{year}{2019}
+      \verb{urlraw}
+      \verb https://portswigger.net/research/http-desync-attacks-request-smuggling-reborn
+      \endverb
+      \verb{url}
+      \verb https://portswigger.net/research/http-desync-attacks-request-smuggling-reborn
+      \endverb
+    \endentry
     \entry{netty_aggregator}{misc}{}{}
       \name{author}{1}{}{%
         {{hash=92831f79c3dabf9d92e06cf1a6b490a6}{%
@@ -259,8 +703,8 @@
       \strng{authornamehash}{92831f79c3dabf9d92e06cf1a6b490a6}
       \strng{authorfullhash}{92831f79c3dabf9d92e06cf1a6b490a6}
       \strng{authorfullhashraw}{92831f79c3dabf9d92e06cf1a6b490a6}
-      \field{sortinit}{1}
-      \field{sortinithash}{4f6aaa89bab872aa0999fec09ff8e98a}
+      \field{sortinit}{2}
+      \field{sortinithash}{8b555b3791beccb63322c22f3320aa9a}
       \field{labelnamesource}{author}
       \field{labeltitlesource}{title}
       \field{title}{{Netty HttpObjectAggregator}}
@@ -285,8 +729,8 @@
       \strng{authornamehash}{e81bb6a4e26664436b2fd7817ee0d024}
       \strng{authorfullhash}{e81bb6a4e26664436b2fd7817ee0d024}
       \strng{authorfullhashraw}{e81bb6a4e26664436b2fd7817ee0d024}
-      \field{sortinit}{1}
-      \field{sortinithash}{4f6aaa89bab872aa0999fec09ff8e98a}
+      \field{sortinit}{2}
+      \field{sortinithash}{8b555b3791beccb63322c22f3320aa9a}
       \field{labelnamesource}{author}
       \field{labeltitlesource}{title}
       \field{title}{{ASGI 3.0 specification}}
@@ -311,8 +755,8 @@
       \strng{authornamehash}{6c51e857aaf0f52de14dd1e6ea41169c}
       \strng{authorfullhash}{6c51e857aaf0f52de14dd1e6ea41169c}
       \strng{authorfullhashraw}{6c51e857aaf0f52de14dd1e6ea41169c}
-      \field{sortinit}{1}
-      \field{sortinithash}{4f6aaa89bab872aa0999fec09ff8e98a}
+      \field{sortinit}{3}
+      \field{sortinithash}{ad6fe7482ffbd7b9f99c9e8b5dccd3d7}
       \field{labelnamesource}{author}
       \field{labeltitlesource}{title}
       \field{title}{{PEP 3333: Python Web Server Gateway Interface v1.0.1}}

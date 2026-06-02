@@ -275,7 +275,7 @@
         "image": "hexpm/elixir:1.17.3-erlang-27.1.2-debian-bookworm-slim",
         "cpus": 1
       },
-      "verdict": "QUADRATIC",
+      "verdict": "VULNERABLE-PER-CHUNK",
       "measurements": [
         {
           "mode": "A-bridge-coalesced",

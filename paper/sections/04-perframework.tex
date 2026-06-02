@@ -87,7 +87,7 @@ feature-scope decision by a maintainer skeptical of the threat
 framing; we do not characterize it as a deliberate security
 position.
 
-\subsection{Node.js (the four QUADRATIC servers)}
+\subsection{Node.js (the three QUADRATIC servers)}
 \label{sec:pf-node}
 
 Node's built-in \fname{http.Server} measures
@@ -97,9 +97,15 @@ in the $N \in \{\num{50000}, \num{100000}, \num{250000}\}$ range.
 \fwid{express} 5.x and \fwid{fastify} 5.x extrapolate from
 smaller cells (measured $N{=}\num{50000}$ and $N{=}\num{100000}$)
 to $\sim 324$ s and $\sim 339$ s at $N{=}\num{250000}$
-respectively\footnote{We mark extrapolated cells with an asterisk
-in Table~\ref{tab:matrix}; the underlying $N{=}\num{50000}$ and
-$N{=}\num{100000}$ data points were measured directly.}. The
+respectively\footnote{Both the \fwid{express} and \fwid{fastify}
+$N{=}\num{250000}$ cells are extrapolated from a quadratic fit and
+are marked with an asterisk in Table~\ref{tab:matrix}; only the
+underlying $N{=}\num{50000}$ and $N{=}\num{100000}$ data points
+were measured directly. The directly-measured \SI{1.5}{\mebi\byte}
+headline figure we cite (282\,s of single-core wall time for Node
+\fwid{http.Server}) is a measurement at $N{=}\num{250000}$; the
+\fwid{express}/\fwid{fastify} 324/339\,s figures are not, and are
+excluded from any measured total.}. The
 framework layer adds essentially nothing because all three use
 the same underlying \fname{http.Server} + \fname{llhttp}
 substrate.
@@ -171,22 +177,28 @@ message-send per chunk from
 \fwid{Phoenix} 1.7 on top of \fname{plug\_cowboy} adds the
 \fname{Plug} adapter layer and measures \SI{32}{\micro\second}.
 
-\fwid{Bandit} 1.11.1 (pure-Elixir HTTP/1, no Cowboy) is the
-fourth QUADRATIC server in our sample. The smoking gun is
-\fname{erlang:iolist\_size/1} consuming 89.3\% of CPU in the
-\fname{:eprof} sample. The chunked decoder's
+\fwid{Bandit} 1.11.1 (pure-Elixir HTTP/1, no Cowboy) is a
+high-constant \emph{linear} case ($\sim$\SI{138}{\micro\second}/chunk
+under Mode B), \emph{not} quadratic: its measured scaling
+exponent is $\sim 1.05$ and its per-chunk cost \emph{falls} with
+$N$ (155\,$\to$\,148\,$\to$\,138\,\si{\micro\second} over
+$N{=}$50k\,$\to$\,100k\,$\to$\,250k). It nonetheless carries the
+same "per-chunk operation walks accumulated state" shape as the
+Node trio: \fname{erlang:iolist\_size/1} consumes 89.3\% of CPU
+in the \fname{:eprof} sample, because
 \fname{Bandit.HTTP1.Socket.do\_read\_chunk!/4} accumulates body
 fragments into an iolist and re-walks it on every chunk via
-\fname{iolist\_size/1} to update progress; this is the same
-"per-chunk operation walks accumulated state" antipattern as
-Node's microtask-queue drain, with a totally different mechanism.
+\fname{iolist\_size/1} to update progress. In our $N$ range that
+walk stays bounded enough to remain linear; we classify Bandit
+VULNERABLE-PER-CHUNK at the top of that class.
 
-\subsection{.NET (the BATCHES-CORRECTLY reference)}
+\subsection{.NET (the HTTP/1.1 BATCHES-CORRECTLY reference)}
 \label{sec:pf-dotnet}
 
-\fwid{Kestrel} 9 (ASP.NET Core 9) on .NET 9 is the single server
-in our entire sample that defeats the per-chunk class
-structurally. \fname{Http1ChunkedEncodingMessageBody.PumpAsync}
+\fwid{Kestrel} 9 (ASP.NET Core 9) on .NET 9 is the single
+HTTP/1.1 server in our sample that defeats the per-chunk class
+structurally (four WebSocket servers do the same at the frame
+layer; Section~\ref{sec:pf-ws}). \fname{Http1ChunkedEncodingMessageBody.PumpAsync}
 (\fname{src/Servers/Kestrel/Core/src/Internal/Http/Http1ChunkedEncodingMessageBody.cs}
 in the \fname{release/9.0} branch) drains the entire socket-
 readable buffer into a \fname{System.IO.Pipelines.Pipe}, loops
@@ -213,10 +225,14 @@ touching chunked-TE in recent memory.
 As \emph{origin} servers, all three are VULNERABLE-PER-CHUNK:
 \fwid{nginx} 1.29 (OpenResty distribution; the per-chunk cost is
 in \fname{ngx\_http\_parse\_chunked\_state\_machine}) measures
-\SI{114}{\micro\second}/chunk -- the worst linear cell in our
-sample, because the C cost is amplified by the OpenResty Lua-sink
-wrapper that we used to obtain a sink-handler in nginx's request
-lifecycle. Apache \fwid{httpd} 2.4.67 (\fname{event} MPM,
+\SI{114}{\micro\second}/chunk -- among the worst per-chunk cells in
+our sample (second only to the \fwid{bandit} iolist outlier at
+$\sim$\SI{138}{\micro\second}), and a synthetic figure rather than
+a representative nginx deployment: the C cost is amplified by the
+OpenResty Lua-sink wrapper that we used to obtain a sink-handler in
+nginx's request lifecycle. nginx's real-world role is as the
+buffering reverse proxy of Section~\ref{sec:mitigation}, not as an
+origin app server. Apache \fwid{httpd} 2.4.67 (\fname{event} MPM,
 \fname{ChunkedInputFilter}) measures \SI{15}{\micro\second}/chunk.
 \fwid{HAProxy} 3.0.23 (with a Lua applet sinking the body) is the
 fastest C server at \SI{7.6}{\micro\second}/chunk.

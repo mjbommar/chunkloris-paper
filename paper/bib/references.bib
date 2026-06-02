@@ -122,3 +122,119 @@
   title = {{llhttp parser}},
   url = {https://github.com/nodejs/llhttp},
 }
+
+@misc{slowloris,
+  author       = {Robert Hansen (RSnake)},
+  title        = {{Slowloris HTTP DoS}},
+  year         = {2009},
+  howpublished = {ha.ckers.org (orig.); archived tool},
+  url          = {https://github.com/XCHADXFAQ77X/SLOWLORIS},
+  note         = {Low-bandwidth, connection-slot-exhaustion HTTP DoS tool},
+}
+
+@misc{rudy,
+  author       = {{OWASP}},
+  title        = {{R-U-Dead-Yet (RUDY): slow HTTP POST denial of service}},
+  howpublished = {OWASP Foundation},
+  url          = {https://owasp.org/www-community/attacks/Slow_HTTP_Attacks},
+  note         = {Slow-POST variant of the Slowloris connection-exhaustion family},
+}
+
+@article{cambiaso_survey,
+  author  = {Enrico Cambiaso and Gianluca Papaleo and Giovanni Chiola and Maurizio Aiello},
+  title   = {{Slow DoS attacks: definition and categorisation}},
+  journal = {International Journal of Trust Management in Computing and Communications},
+  volume  = {1},
+  number  = {3/4},
+  pages   = {300--319},
+  year    = {2013},
+  doi     = {10.1504/IJTMCC.2013.056440},
+  url     = {https://dblp.org/rec/journals/ijtmcc/CambiasoPCA13.html},
+}
+
+@inproceedings{crosby2003,
+  author    = {Scott A. Crosby and Dan S. Wallach},
+  title     = {{Denial of Service via Algorithmic Complexity Attacks}},
+  booktitle = {Proceedings of the 12th USENIX Security Symposium},
+  year      = {2003},
+  publisher = {USENIX Association},
+  url       = {https://www.usenix.org/conference/12th-usenix-security-symposium/denial-service-algorithmic-complexity-attacks},
+}
+
+@misc{cwe400,
+  author       = {{MITRE}},
+  title        = {{CWE-400: Uncontrolled Resource Consumption}},
+  howpublished = {Common Weakness Enumeration},
+  url          = {https://cwe.mitre.org/data/definitions/400.html},
+}
+
+@misc{cwe405,
+  author       = {{MITRE}},
+  title        = {{CWE-405: Asymmetric Resource Consumption (Amplification)}},
+  howpublished = {Common Weakness Enumeration},
+  url          = {https://cwe.mitre.org/data/definitions/405.html},
+}
+
+@misc{rapidreset2023,
+  author       = {{NIST National Vulnerability Database}},
+  title        = {{CVE-2023-44487: HTTP/2 Rapid Reset}},
+  year         = {2023},
+  howpublished = {CVE-2023-44487},
+  url          = {https://nvd.nist.gov/vuln/detail/CVE-2023-44487},
+}
+
+@misc{rapidreset_cloudflare,
+  author       = {Lucas Pardue and Julien Desgats},
+  title        = {{HTTP/2 Zero-Day vulnerability results in record-breaking DDoS attacks}},
+  year         = {2023},
+  howpublished = {Cloudflare Blog},
+  url          = {https://blog.cloudflare.com/zero-day-rapid-reset-http2-record-breaking-ddos-attack/},
+}
+
+@misc{continuation2024,
+  author       = {{NIST National Vulnerability Database}},
+  title        = {{CVE-2024-27316: Apache HTTP Server HTTP/2 DoS by memory exhaustion on endless CONTINUATION frames}},
+  year         = {2024},
+  howpublished = {CVE-2024-27316},
+  url          = {https://nvd.nist.gov/vuln/detail/CVE-2024-27316},
+}
+
+@misc{continuation_nowotarski,
+  author       = {Bart{\l}omiej Nowotarski},
+  title        = {{HTTP/2 CONTINUATION Flood}},
+  year         = {2024},
+  howpublished = {nowotarski.info},
+  url          = {https://nowotarski.info/http2-continuation-flood/},
+}
+
+@misc{madeyoureset,
+  author       = {{NIST National Vulnerability Database}},
+  title        = {{CVE-2025-8671: HTTP/2 MadeYouReset DoS via control frames}},
+  year         = {2025},
+  howpublished = {CVE-2025-8671},
+  url          = {https://nvd.nist.gov/vuln/detail/CVE-2025-8671},
+}
+
+@misc{madeyoureset_cert,
+  author       = {{CERT Coordination Center}},
+  title        = {{VU\#767506: HTTP/2 implementations vulnerable to ``MadeYouReset'' DoS through HTTP/2 control frames}},
+  year         = {2025},
+  howpublished = {CERT/CC Vulnerability Note},
+  url          = {https://kb.cert.org/vuls/id/767506},
+}
+
+@misc{calif_http2bomb,
+  author       = {{Calif.io}},
+  title        = {{Codex Discovered a Hidden HTTP/2 Bomb}},
+  year         = {2025},
+  howpublished = {Calif.io Blog},
+  url          = {https://blog.calif.io/p/codex-discovered-a-hidden-http2-bomb},
+}
+
+@misc{kettle_desync,
+  author       = {James Kettle},
+  title        = {{HTTP Desync Attacks: Request Smuggling Reborn}},
+  year         = {2019},
+  howpublished = {PortSwigger Research (Black Hat USA 2019)},
+  url          = {https://portswigger.net/research/http-desync-attacks-request-smuggling-reborn},
+}

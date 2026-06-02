@@ -1,0 +1,113 @@
+ChunkLoris sits at the intersection of two long lineages: low-bandwidth
+application-layer denial of service (the slow-DoS family) and
+algorithmic-complexity / resource-asymmetry attacks. Our contribution is
+not a new primitive but a \emph{measurement and systematization}: we
+identify and quantify a resource axis---per-DATA-unit application
+\emph{dispatch} CPU cost---that the prior literature names only in
+passing, and we measure it across \num{27} production servers. We
+organize the prior work by the resource each attack amplifies, and draw
+the line to ours in each case.
+
+\subsection{Connection-slot exhaustion: the slow-DoS family}
+\label{sec:rel-slowdos}
+
+The canonical low-and-slow attacks amplify \emph{connection slots}: an
+attacker holds open many concurrent connections at negligible client
+cost, exhausting a server's bounded pool. Slowloris~\cite{slowloris}
+(Hansen, 2009) keeps thread-per-connection servers' worker pools occupied
+by dribbling partial request headers and never completing them; RUDY
+(R-U-Dead-Yet)~\cite{rudy} does the same with a slow \texttt{POST} body
+under a large \fname{Content-Length}; slow-read variants stall on the
+response side. Cambiaso et al.~\cite{cambiaso_survey} give the standard
+taxonomy of these attacks (pending-request, long-response, and
+multi-layer slow DoS). Section~\ref{sec:bg-cwe} situates ChunkLoris in
+this lineage at the wire level.
+
+The distinction is the bottleneck. The slow-DoS family is
+\emph{concurrency-bound}: a coalescing front-end or a per-connection
+header/idle timeout neutralizes it, and once admitted the request costs
+the server essentially nothing. ChunkLoris is \emph{CPU-bound}: a single
+admitted, RFC-compliant, fully-framed chunked request burns single-core
+CPU \emph{in proportion to its chunk count} on the parser/dispatcher
+boundary, independent of how many connections the attacker holds. Header
+timeouts and slot caps do not bound it; only per-request work or byte
+accounting does.
+
+\subsection{Algorithmic-complexity and asymmetric-resource attacks}
+\label{sec:rel-complexity}
+
+Crosby and Wallach~\cite{crosby2003} introduced low-bandwidth
+algorithmic-complexity attacks: worst-case inputs that drive a data
+structure (hash tables, binary trees) into its degenerate
+$\Theta(n^2)$ regime, converting a small request into large server CPU.
+This is the conceptual ancestor of the superlinear case we measure
+(Node's \fwid{http.Server} via \fname{process.nextTick}). MITRE
+catalogues this class as CWE-407 (Inefficient Algorithmic
+Complexity)~\cite{cwe407}, the asymmetry itself as CWE-405 (Asymmetric
+Resource Consumption (Amplification))~\cite{cwe405}, and the umbrella as
+CWE-400 (Uncontrolled Resource Consumption)~\cite{cwe400}.
+
+ChunkLoris's \emph{common} (linear) case is not an algorithmic-complexity
+bug in the Crosby--Wallach sense: the per-chunk cost is $\Theta(N)$ in
+chunk count with a large constant, not a degenerate worst case of an
+otherwise sub-quadratic structure. The amplified resource is the
+\emph{fixed per-dispatch overhead}---a parser callback plus an
+application-receive event (and, on most event loops, a task/await
+switch)---multiplied by an attacker-chosen frame count. It is best read
+as CWE-405 asymmetry whose unit of amplification is the protocol's
+smallest framing unit rather than a hash collision. The three Node
+servers additionally exhibit CWE-407 behavior, which we treat as a
+distinct, server-specific finding layered on top of the universal linear
+tax.
+
+\subsection{Control-plane and decompression attacks in HTTP/2}
+\label{sec:rel-h2}
+
+The modern HTTP/2 DoS literature amplifies resources other than
+per-DATA-unit dispatch, which sharpens our novelty claim. \emph{Rapid
+Reset} (CVE-2023-44487)~\cite{rapidreset2023,rapidreset_cloudflare}
+amplifies \emph{control-plane stream churn}: a client opens and
+immediately \fname{RST\_STREAM}s streams, decoupling expensive
+server-side request setup from the 100-concurrent-stream cap and
+producing record-breaking request rates. The \emph{CONTINUATION Flood}
+(CVE-2024-27316 and siblings)~\cite{continuation2024,continuation_nowotarski}
+amplifies \emph{memory and header-decode CPU} via an unbounded stream of
+\fname{CONTINUATION} frames that are decoded but never finalized.
+\emph{MadeYouReset} (CVE-2025-8671)~\cite{madeyoureset,madeyoureset_cert}
+revives the Rapid Reset control-plane axis by inducing
+\emph{server}-initiated resets through malformed control frames, thereby
+sidestepping client-reset rate limits. The calif.io ``hidden HTTP/2
+bomb''~\cite{calif_http2bomb} composes an HPACK indexed-reference bomb
+(one wire byte per reference expands to tens-to-thousands of bytes of
+server allocation) with a flow-control window stall, amplifying
+\emph{memory via header decompression} and pinning it with zero-window
+\fname{WINDOW\_UPDATE} drips.
+
+None of these targets per-DATA-frame application dispatch. Rapid Reset and
+MadeYouReset never send \fname{DATA}; CONTINUATION Flood and the HPACK bomb
+live entirely in the header/control plane. Crucially, HTTP/2 flow control
+bounds \emph{bytes} in flight but places no ceiling on the \emph{number of
+frames} carrying those bytes---so an attacker can split one
+flow-control-window's worth of body into thousands of \SI{1}{\byte}
+\fname{DATA} frames, each forcing a parser callback and a handler wake. Our
+Wave 3 results show every HTTP/2 server in our sample inheriting the same
+per-frame tax (\SIrange{4}{10}{\micro\second}/frame) as HTTP/1.1
+chunked-TE; the per-chunk axis is orthogonal to, and unmitigated by, the
+defenses deployed for the attacks above.
+
+\subsection{HTTP parsing and smuggling measurement lineage}
+\label{sec:rel-smuggling}
+
+Methodologically, our cross-server probing of how independent
+implementations diverge on an underspecified part of the HTTP grammar
+follows the request-smuggling measurement tradition, most prominently
+Kettle's \emph{HTTP Desync Attacks}~\cite{kettle_desync}, which exploits
+\emph{disagreement} between front-end and back-end parsers over message
+framing (\fname{Content-Length} vs.\ \fname{Transfer-Encoding}). That line
+weaponizes \emph{semantic} parser divergence to smuggle requests; we
+instead measure \emph{performance} divergence on a point the spec leaves
+open---the granularity at which a conformant parser delivers decoded body
+bytes to the handler (Section~\ref{sec:bg-chunked}). We share the
+comparative, many-implementation methodology but target a CPU cost axis
+rather than a confusion-based exploit, and every server we measure is
+fully RFC-compliant.

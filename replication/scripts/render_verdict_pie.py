@@ -14,6 +14,7 @@ VERDICT_COLOR = {
     "BATCHES-CORRECTLY":         "#2ca02c",
     "VULNERABLE-PER-RECV-ONLY":  "#bcbd22",
     "VULNERABLE-PER-CHUNK":      "#ff7f0e",
+    "VULNERABLE-PER-FRAME":      "#ff9896",
     "QUADRATIC":                 "#d62728",
     "CRASHES":                   "#7f7f7f",
     "UNKNOWN":                   "#cccccc",

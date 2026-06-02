@@ -22,10 +22,10 @@ Section~\ref{sec:method-modes}.
 \subsection{Three structural classes}
 \label{sec:synth-classes}
 
-Across 27 servers and 7 ecosystems we observe three structural
-classes:
+Across the 27 HTTP/1.1 servers and 7 ecosystems we observe three
+structural classes:
 
-\paragraph{Class~1: BATCHES-CORRECTLY (1 server).}
+\paragraph{Class~1: BATCHES-CORRECTLY (1 HTTP/1.1 server).}
 Kestrel on ASP.NET Core. Its
 \fname{Http1ChunkedEncodingMessageBody.PumpAsync} pumps the
 socket-readable buffer through the chunked-decoder loop entirely
@@ -38,7 +38,7 @@ managed code inside the pump and never crosses the
 \fname{async}/\fname{await} boundary. \fname{System.IO.Pipelines} is
 the substrate that makes this efficient.
 
-\paragraph{Class~2: VULNERABLE-PER-CHUNK linear (22 servers).}
+\paragraph{Class~2: VULNERABLE-PER-CHUNK linear (23 servers).}
 The chunked decoder loops one application callback per chunk
 (ASGI \fname{await receive()}, Go's \fname{Body.Read} returning a
 single chunk, Rust hyper's
@@ -53,40 +53,47 @@ itself: ASGI receive, goroutine wake, future-poll,
 thread context switch.
 
 The cost-per-chunk spread within this class is
-$\sim 50\times$, from \SI{2.1}{\micro\second}/chunk (uvicorn +
-httptools) to \SI{114}{\micro\second}/chunk (nginx as origin).
+$\sim 65\times$, from \SI{2.1}{\micro\second}/chunk (uvicorn +
+httptools) to \SI{138}{\micro\second}/chunk (the \fwid{bandit}
+iolist outlier), with the synthetic nginx-as-origin cell at
+\SI{114}{\micro\second}/chunk just below it.
 Compiled languages (Rust, C, Go) cluster at the cheap end;
 managed-runtime servers running their parser in interpreted code
-(Puma, gunicorn, waitress, tornado) cluster at the expensive end.
+(Puma, gunicorn, waitress, tornado) cluster at the expensive end,
+and \fwid{bandit}'s iolist walk (Section~\ref{sec:rc-mechanisms})
+is the single highest-constant linear case.
 
-\paragraph{Class~3: QUADRATIC (4 servers).}
-Two distinct quadratic mechanisms appear in our sample, and they
-are not from the same runtime:
+\paragraph{Class~3: QUADRATIC (3 servers).}
+A single superlinear mechanism appears in our sample, exhibited
+by the three Node \fwid{http.Server}-based servers, which all
+share one substrate:
 
-\begin{enumerate}
+\begin{itemize}
   \item \emph{Node.js Readable substrate.} Each parsed chunk
     causes \fname{llhttp on\_body} -> \fname{parserOnBody} ->
     \fname{socket.push(buf)} -> \fname{addChunk} ->
     \fname{maybeReadMore} -> \fname{process.nextTick}. The
     \fname{nextTick} per chunk grows the microtask queue;
-    drain cost is superlinear in queue depth. Inherited by
-    \fwid{express} and \fwid{fastify}.
-  \item \emph{Bandit iolist accumulator.} Each
-    \fname{do\_read\_chunk!/4} call walks the accumulated
-    iolist via \fname{erlang:iolist\_size/1} (89.3\% of CPU in
-    the \fname{:eprof} sample). The cost grows linearly per
-    chunk in the size of the already-accumulated body, giving
-    a quadratic total.
-\end{enumerate}
+    drain cost is superlinear in queue depth. The built-in
+    \fwid{http.Server} reaches a measured exponent of
+    $\sim 1.7$--$2.0$; \fwid{express} and \fwid{fastify} inherit
+    the same substrate and the same shape.
+\end{itemize}
 
-Both mechanisms are "per-chunk operation walks accumulated
-state" patterns; the substrate differs but the asymptotic shape
-is the same.
+\fwid{Bandit} carries a related "per-chunk operation walks
+accumulated state" pattern (an \fname{erlang:iolist\_size/1}
+walk per chunk), but in our $N$ range it does \emph{not} reach
+the quadratic regime: its measured exponent is $\sim 1.05$ and
+its per-chunk cost \emph{falls} with $N$
+(155\,$\to$\,148\,$\to$\,138\,\si{\micro\second}/chunk under
+Mode B). We therefore classify it VULNERABLE-PER-CHUNK at a high
+linear constant ($\sim$\SI{138}{\micro\second}/chunk), not
+QUADRATIC.
 
 \subsection{Headline ranking}
 \label{sec:synth-rank}
 
-Figure~\ref{fig:headline-uschunk} ranks all 27 servers by
+Figure~\ref{fig:headline-uschunk} ranks all 27 HTTP/1.1 servers by
 per-chunk cost on a log-scale x-axis. The most-deployed servers
 in each ecosystem (\fwid{express} in Node, \fwid{Spring Boot} on
 Tomcat in JVM, \fwid{Puma} in Ruby, \fwid{gunicorn} in Python,
@@ -96,8 +103,8 @@ across the matrix: \emph{the most-deployed server in each
 ecosystem is rarely the fastest at this workload}.
 
 Figure~\ref{fig:scaling} plots wall time as a function of $N$
-on log-log axes; the four QUADRATIC servers separate cleanly
-from the linear pack. Figure~\ref{fig:mode-a-vs-b} contrasts
+on log-log axes; the three QUADRATIC servers (the Node trio)
+separate cleanly from the linear pack. Figure~\ref{fig:mode-a-vs-b} contrasts
 Mode A versus Mode B at $N{=}\num{250000}$ and shows that for
 several servers Mode A is two to three orders of magnitude
 faster than Mode B, hiding the bug from any test methodology that
@@ -106,9 +113,12 @@ omits paced probes.
 \begin{figure}[h]
   \centering
   \includegraphics[width=0.9\linewidth]{figures/verdict_distribution.pdf}
-  \caption{Verdict distribution across the 27 surveyed servers.
-  One server (Kestrel) batches correctly; 22 are linear-per-chunk
-  vulnerable; 4 are quadratic.}
+  \caption{Verdict distribution across all 39 surveyed servers
+  (27 HTTP/1.1, 6 HTTP/2, 6 WebSocket). Five batch correctly
+  (Kestrel on HTTP/1.1 plus four WebSocket stacks); 29 are
+  per-chunk vulnerable; 3 are quadratic (the Node \fwid{http.Server}
+  trio); 2 WebSocket stacks are per-frame vulnerable. Restricted to
+  the 27 HTTP/1.1 servers the split is 1 / 23 / 3.}
   \label{fig:verdict-distribution}
 \end{figure}
 

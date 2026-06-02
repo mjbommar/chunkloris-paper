@@ -72,6 +72,65 @@ Mode A and Mode B bound the realistic spectrum of network
 conditions: Mode A approximates kubernetes pod-to-pod traffic,
 Mode B approximates slow-drip attacker pacing or trans-WAN bursts.
 
+\subsection{What the per-chunk cost number means}
+\label{sec:method-metric}
+
+\paragraph{Primary observable.}
+The one quantity we record on every cell is \emph{prober-side wall
+time} $T_\mathrm{wall}$: elapsed seconds from the prober writing
+the first body byte to receiving the server's response. This is an
+end-to-end elapsed-time measurement, not a CPU-time measurement.
+
+\paragraph{Per-chunk cost, defined per mode.}
+For a cell of $N$ one-byte chunks we report a per-chunk cost $c$ in
+microseconds. Because the two modes load the server differently,
+$T_\mathrm{wall}$ contains different components, so we define $c$
+per mode:
+\begin{itemize}
+  \item \textbf{Mode A (bridge-coalesced):} no inter-chunk delay,
+    so $T_\mathrm{wall}$ is dominated by server work plus
+    scheduling. We report $c_A = T_\mathrm{wall}\cdot 10^{6}/N$, a
+    wall-derived upper bound on per-chunk server cost (it includes
+    any prober-side and network time, and for the quadratic
+    servers it is the steady-state slope, not a constant).
+  \item \textbf{Mode B (paced \SI{100}{\micro\second}):} the
+    prober inserts a \SI{100}{\micro\second} busy-wait per chunk,
+    so the floor of $T_\mathrm{wall}$ is
+    $N\cdot\SI{100}{\micro\second}$ whenever the server is faster
+    than the pacing. The per-chunk \emph{server} cost is then the
+    excess over that floor,
+    $c_B = (T_\mathrm{wall}-N\cdot\SI{100}{\micro\second})\cdot
+    10^{6}/N$. When the server's own per-chunk cost \emph{exceeds}
+    \SI{100}{\micro\second} the pacing is fully overlapped and no
+    longer the floor; for those saturated cells
+    ($\mathrm{cpu}\!\approx\!100\%$, e.g.\ \fwid{nginx},
+    \fwid{bandit}) we instead report
+    $T_\mathrm{wall}\cdot 10^{6}/N$, a wall-time upper bound rather
+    than a clean CPU figure.
+\end{itemize}
+
+\paragraph{Wall-derived vs.\ CPU-derived cells.}
+Where the container is saturated for the full run
+($\mathrm{cpu}\!\approx\!100\%$), wall and CPU time coincide to
+within measurement error and we treat the figure as CPU.
+Otherwise wall time over-counts CPU, so the per-chunk number is a
+wall-time upper bound. Of the 203 cells in our dataset, only 64
+carry a server CPU sample (\texttt{server\_cpu\_pct}); the other
+139 are wall-derived. We never convert a wall-derived cell into a
+CPU-second claim, and Section~\ref{sec:threats} records the
+resulting bias directions.
+
+\paragraph{CPU sampling method.}
+Where present, \texttt{server\_cpu\_pct} is a single
+\fname{docker stats --no-stream} snapshot taken during the run,
+and the CPU-seconds we cite are
+$T_\mathrm{wall}\times\texttt{server\_cpu\_pct}$. This is a
+sampled rate times a duration, not an integral of
+\fname{cpuacct.usage}; under contention \fname{docker stats} can
+over- or under-report and can exceed \SI{100}{\percent} on a
+single pinned core, so we round CPU figures to the
+tens-of-percent level.
+
 \subsection{Profile collection}
 \label{sec:method-profile}
 

@@ -582,7 +582,8 @@
         {
           "mode": "A-bridge-coalesced",
           "n_bytes": 250000,
-          "wall_seconds": 339
+          "wall_seconds": 339,
+          "notes": "extrapolated from quadratic fit"
         }
       ],
       "scaling_exponent_mode_a": 2.0
@@ -950,7 +951,7 @@
         "image": "hexpm/elixir:1.17.3-erlang-27.1.2-debian-bookworm-slim",
         "cpus": 1
       },
-      "verdict": "QUADRATIC",
+      "verdict": "VULNERABLE-PER-CHUNK",
       "measurements": [
         {
           "mode": "A-bridge-coalesced",

@@ -1,14 +1,18 @@
 We measured 27 production HTTP/1.1 servers across 7 language
-ecosystems plus three C servers for their handling of the
-RFC-compliant pathological input "$N$-byte body delivered as $N$
-one-byte chunked-TE chunks." Across the entire sample, one server
-(Microsoft's Kestrel via \fname{System.IO.Pipelines}) structurally
-defeats the per-chunk amplification class; 22 are linear-but-
-vulnerable with per-chunk costs spanning a factor of $\sim 50\times$;
-4 (Node's built-in \fwid{http.Server}, \fwid{express}, \fwid{fastify},
-Elixir's \fwid{bandit}) exhibit superlinear $\Theta(N^2)$ scaling
-that pins a single CPU core for minutes per \SI{1.5}{\mebi\byte}
-of attacker traffic.
+ecosystems plus three C servers -- and, in Wave 3, a further 6
+HTTP/2 and 6 WebSocket servers (39 records total) -- for their
+handling of the RFC-compliant pathological input "$N$-byte body
+delivered as $N$ one-byte chunked-TE chunks." Among the HTTP/1.1
+servers, one (Microsoft's Kestrel via \fname{System.IO.Pipelines})
+structurally defeats the per-chunk amplification class; 23 are
+linear-but-vulnerable with per-chunk costs spanning a factor of
+$\sim 65\times$; 3 (Node's built-in \fwid{http.Server},
+\fwid{express}, and \fwid{fastify}, which share one substrate)
+exhibit superlinear $\Theta(N^2)$ scaling that pins a single CPU
+core for minutes per \SI{1.5}{\mebi\byte} of attacker traffic.
+(Elixir's \fwid{bandit} is a high-constant linear case,
+$\sim$\SI{138}{\micro\second}/chunk with measured exponent
+$\sim 1.05$, not quadratic.)
 
 The root cause is a parser/dispatcher boundary design choice, not
 a spec violation. RFC 9112 fixes the wire format but is silent on
@@ -35,7 +39,7 @@ and that the operational advice "deploy behind nginx" deserves
 clearer documentation of its applicability and its limits.
 
 The reproducer harness, raw measurements, and figure-rendering
-scripts are published with this paper under the project at
-\texttt{projects/asgi-perchunk-survey/}. Anyone with Docker plus
-\fname{uv} plus \fname{pdflatex} can reproduce every number in
-this paper from the supplied harness.
+scripts are published with this paper at
+\url{https://github.com/mjbommar/chunkloris-paper}. Anyone with
+Docker plus \fname{uv} plus \fname{pdflatex} can reproduce every
+number in this paper from the supplied harness.

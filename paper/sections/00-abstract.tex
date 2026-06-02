@@ -4,17 +4,16 @@ unknown when the request line is sent. The specification defines the
 wire format but not the granularity at which a parser must deliver
 decoded body bytes to the application handler. We measure that
 delivery granularity, end to end and under controlled network
-conditions, across \textbf{27 production HTTP servers} spanning
+conditions, across \textbf{27 production HTTP/1.1 servers} spanning
 \textbf{7 language ecosystems} (Python, Go, Rust, JVM, Node.js,
 BEAM, Ruby) and three C servers (\fwid{nginx}, Apache \fwid{httpd},
 \fwid{HAProxy}).
 
-We find that \textbf{exactly one server} in our sample
+We find that \textbf{exactly one HTTP/1.1 server} in our sample
 (Microsoft's Kestrel on ASP.NET Core, via the
 \fname{System.IO.Pipelines} substrate)
 \emph{moves the per-chunk cost off the
-\fname{async}/\fname{await} scheduling boundary} on
-\textbf{HTTP/1.1 only}: its
+\fname{async}/\fname{await} scheduling boundary}: its
 \fname{Http1ChunkedEncodingMessageBody.PumpAsync} drains the
 socket-readable buffer into a Pipe, loops through every chunk
 header present, then wakes the application handler with a single
@@ -28,21 +27,31 @@ servers' cost.
 Every other server we measure dispatches one parser callback per
 chunk and emits one application-receive event per chunk; this
 costs between \SI{2.1}{\micro\second} (uvicorn + httptools) and
-\SI{114}{\micro\second} (nginx as origin) of single-core CPU per
-chunk under our standardized probe.
+\SI{114}{\micro\second} (nginx as origin) of single-core time per
+chunk under our standardized probe (we define exactly what this
+number measures, and which cells are CPU- versus wall-derived, in
+Section~\ref{sec:method-metric}).
 
-Four servers exhibit \textbf{superlinear} wall-time scaling
-(measured exponents 1.0--2.0 in our $N$ range; mechanistic
-arguments support an asymptotic $\Theta(N^2)$): Node's built-in
-\fwid{http.Server} (and \fwid{express} and \fwid{fastify} atop it)
-via the \fname{process.nextTick} cost of the Readable substrate,
-and Elixir's \fwid{bandit} via an \fname{erlang:iolist\_size}/iolist
-walk per chunk in \fname{do\_read\_chunk!/4}. A
-\SI{1.5}{\mebi\byte} attacker request consumes \emph{measured}
-282\,s of Node \fwid{http.Server} CPU at $N{=}\num{250000}$
-chunks, and 42\,s of bandit CPU; the cited \fwid{express}
-N=\num{250000} cell is extrapolated from a quadratic fit to
-smaller cells.
+A single superlinear mechanism, exhibited by the three
+Node \fwid{http.Server}-based servers (the built-in
+\fwid{http.Server} plus \fwid{express} and \fwid{fastify} atop
+it), drives genuine $\Theta(N^2)$ wall-time scaling (measured
+exponent $\sim 1.7$--$2.0$ in our $N$ range) via the
+\fname{process.nextTick} cost of the Readable substrate. A
+\SI{1.5}{\mebi\byte} attacker request drives Node
+\fwid{http.Server} to 282\,s of single-core \emph{wall} time
+(Mode~A, $N{=}\num{250000}$, server pinned at one vCPU and
+saturated for the full run, so wall $\approx$ CPU); the
+\fwid{express} and \fwid{fastify} $N{=}\num{250000}$ cells are
+extrapolated from a quadratic fit to the measured smaller cells,
+not measured. Elixir's \fwid{bandit} is \emph{not} quadratic: its
+measured exponent is $\sim 1.05$ and its per-chunk cost
+\emph{falls} with $N$
+(155\,$\to$\,148\,$\to$\,138\,\si{\micro\second}/chunk over
+$N{=}$50k\,$\to$\,100k\,$\to$\,250k under Mode B). It is a
+high-constant linear case ($\sim$\SI{138}{\micro\second}/chunk via
+an \fname{erlang:iolist\_size}/iolist walk per chunk in
+\fname{do\_read\_chunk!/4}), not a $\Theta(N^2)$ blow-up.
 
 The "deploy behind nginx" mitigation widely advised in framework
 documentation is empirically confirmed. With default

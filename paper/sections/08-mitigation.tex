@@ -133,10 +133,12 @@ at \texttt{wave2/c/nginx-as-proxy/logs/scenario-\{A,B\}-*.log}.
 For every Python, Node, Ruby, Java, or .NET application deployed
 behind a default nginx, this is full mitigation of the per-chunk
 amplification class for the upstream. Nginx itself still pays the
-cost (Section~\ref{sec:synth-matrix} shows nginx-as-origin
-costs $\sim$\SI{114}{\micro\second}/chunk -- the worst linear cell
-in our sample) but nginx is a hardened C server with well-tuned
-worker concurrency, so the impact is bounded.
+parsing cost (Section~\ref{sec:synth-matrix} reports a synthetic
+nginx-as-origin cost of $\sim$\SI{114}{\micro\second}/chunk under
+an OpenResty Lua sink, among the highest per-chunk cells we
+measured) but nginx is a hardened C server with well-tuned
+worker concurrency, and as a buffering proxy it never delivers the
+body per-chunk to the upstream at all, so the impact is bounded.
 
 \paragraph{Apache httpd.}
 \fname{mod\_proxy\_http} behaves the same way:

@@ -57,44 +57,58 @@ in Table~\ref{tab:headline-costs}.
 \begin{table}[h]
   \centering
   \footnotesize
-  \caption{Per-request attacker bandwidth versus server CPU,
-  $N{=}\num{250000}$ one-byte chunks, Mode B (paced). Asymmetry
-  ratio is server-CPU-seconds per attacker-MB-on-wire (higher is
-  better for the attacker).}
+  \caption{Per-request attacker bandwidth versus server cost,
+  $N{=}\num{250000}$ one-byte chunks. The cost column mixes two
+  measurement types, marked accordingly: \textsuperscript{c}~cells
+  are Mode~B server-CPU-seconds
+  ($T_\mathrm{wall}\times\texttt{cpu\%}$ from a \fname{docker stats}
+  snapshot); \textsuperscript{w}~cells are single-core \emph{wall}
+  seconds (server pinned at one vCPU, so wall is an upper bound on
+  CPU; \textsuperscript{A}~denotes a Mode~A cell,
+  \textsuperscript{e}~an extrapolated cell). Asymmetry (cost-seconds
+  per attacker-MB-on-wire, higher favors the attacker) is exact only
+  for \textsuperscript{c}~rows; see Section~\ref{sec:method-metric}.}
   \label{tab:headline-costs}
   \begin{tabularx}{\linewidth}{@{}l r r r@{}}
     \toprule
-    Server & Wire (MB) & Server CPU (s) & Asymmetry (s/MB) \\
+    Server & Wire (MB) & Cost (s) & Asymmetry (s/MB) \\
     \midrule
-    Kestrel 9                            & 1.5 & 0.9   & 0.6 \\
-    uvicorn + httptools                  & 1.5 & 0.5   & 0.3 \\
-    uvicorn + h11                        & 1.5 & 1.3   & 0.9 \\
-    Vert.x                               & 1.5 & 1.8   & 1.2 \\
-    Go net/http                          & 1.5 & 3.4   & 2.3 \\
-    Spring Boot / Tomcat                 & 1.5 & 5.3   & 3.5 \\
-    nginx as origin                      & 1.5 & 29    & 19  \\
-    bandit (QUADRATIC)                   & 1.5 & 42    & 28  \\
-    node \fwid{http.Server} (QUADRATIC)  & 1.5 & 282   & 188 \\
-    express (QUADRATIC)                  & 1.5 & 324   & 216 \\
+    Vert.x                               & 1.5 & 1.8\textsuperscript{c}   & 1.2 \\
+    Go net/http                          & 1.5 & 3.4\textsuperscript{c}   & 2.3 \\
+    Spring Boot / Tomcat                 & 1.5 & 5.3\textsuperscript{c}   & 3.5 \\
+    nginx as origin                      & 1.5 & 29\textsuperscript{c}    & 19  \\
+    bandit (linear)                      & 1.5 & 35\textsuperscript{c}    & 23  \\
+    Kestrel 9                            & 1.5 & 25.9\textsuperscript{w}  & --- \\
+    node \fwid{http.Server} (QUADRATIC)  & 1.5 & 282\textsuperscript{w,A} & --- \\
+    express (QUADRATIC)                  & 1.5 & 324\textsuperscript{w,A,e} & --- \\
     \bottomrule
   \end{tabularx}
+
+  {\footnotesize\textsuperscript{c}~Mode~B server CPU-seconds
+  (\fname{docker stats} snapshot $\times$ wall).
+  \textsuperscript{w}~wall-derived upper bound, not CPU.
+  \textsuperscript{A}~Mode~A cell.
+  \textsuperscript{e}~extrapolated from a quadratic fit, not
+  measured. uvicorn rows are omitted: they have no Mode~B
+  $N{=}\num{250000}$ CPU cell.}
 \end{table}
 
 A residential broadband uplink at \SI{20}{\mebi\bit\per\second}
 sustains roughly \SI{2.5}{\mebi\byte\per\second}, comfortably
 servicing one or two attacker connections per second. Against
-\fwid{express} (\(N{=}\num{250000}\), Mode A, extrapolated cell:
-324 s of server CPU per request), one such uplink sustained at
-one request per second per source IP draws several hundred
-server-CPU-seconds per wall-second from the target. For a target
-configured with $M$ Node workers, the cost equation is
-$M$ workers $\times$ available cores per worker; against an
-8-worker, 8-vCPU deployment the attacker must sustain
-\(\sim 8 \div 324 \times 8 \approx 0.2\) requests per second per
-worker to keep the deployment pinned. The attacker primitive is
-real but the "saturating any single-region deployment" claim
-requires a numeric derivation we leave for future work
-(Section~\ref{sec:future-work}).
+\fwid{express} (\(N{=}\num{250000}\), Mode A, \emph{extrapolated}
+cell: 324 s of single-core \emph{wall} time per request, not a
+measured CPU integral), one such uplink sustained at one request
+per second per source IP would, if the server stays CPU-bound on
+one vCPU, draw on the order of a few hundred core-seconds per
+wall-second from the target. We flag this as a wall-time-based
+estimate built on an extrapolated cell: the directly-measured
+Mode~B CPU cost of a single Node \fwid{http.Server} request at
+$N{=}\num{250000}$ is far smaller (about \SI{1.5}{\second}), and
+the gap between that and the saturated-core wall figure is exactly
+why the "saturating any single-region deployment" claim requires a
+measured-CPU derivation we leave for future work
+(Section~\ref{sec:threats}, Section~\ref{sec:future-work}).
 
 \subsection{Detection and evasion}
 \label{sec:tm-detect}
@@ -147,13 +161,20 @@ adjacent vulnerabilities:
 \subsection{Distributed amplification}
 \label{sec:tm-distributed}
 
-A botnet scales the attack linearly with attacker count. At the
-per-attacker rates above, a 100-IP botnet (trivial cost on
-commercial residential proxy services) sustained at one request
-per second per IP against an \fwid{express} target draws on the
-order of $100 \times 324 \approx 32{,}400$ server-CPU-seconds per
-wall-second, equivalent to pinning roughly 700 typical
-c5.4xlarge-equivalent cores. This is a substantial DDoS draw but
-does not categorically saturate a multi-region deployment; the
-saturation outcome depends on the target's worker fleet size
-and per-worker concurrency.
+A botnet scales the attack linearly with attacker count. We
+caution that the per-request Node figures above are single-core
+\emph{wall} time (and, for \fwid{express}, extrapolated), not
+integrated CPU-seconds, so the following is an order-of-magnitude
+estimate rather than a measured result. At one request per second
+per IP against an \fwid{express}-like target, a 100-IP botnet
+(trivial cost on commercial residential proxy services) would, if
+the target stays CPU-bound on the affected workers, draw on the
+order of $100\times$ the per-request core-time -- hundreds of
+core-seconds per wall-second. The measured Mode~B CPU cost of a
+single Node \fwid{http.Server} request at $N{=}\num{250000}$ is
+about \SI{1.5}{\second}, roughly $200\times$ smaller than the
+saturated-core wall figure; until a quadratic Node server is
+re-measured with integrated cgroup CPU at this $N$
+(Section~\ref{sec:threats}), we state the botnet draw only as an
+upper-bound estimate and do not claim it categorically saturates a
+multi-region deployment.

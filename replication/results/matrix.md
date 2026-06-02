@@ -28,8 +28,8 @@ Generated automatically from `data/wave*.json`. Re-render via
 | 21 | gunicorn | 23.0.0 | python | fork-blocking-sync-worker | pure-Python gunicorn.http.body | **VULNERABLE-PER-CHUNK** | 105.6 | 26.4s @ N=250,000 | 1 |
 | 22 | waitress | 3.0.2 | python | asyncore-main-thread-plus-worker-pool | pure-Python waitress.receiver. | **VULNERABLE-PER-CHUNK** | 108 | 27.01s @ N=250,000 | 1.45 |
 | 23 | nginx (openresty distribution) | 1.29.2.3 / openresty:alpine | c | event-loop | nginx ngx_http_parse_chunked_s | **VULNERABLE-PER-CHUNK** | 113.6 | 29.42s @ N=250,000 | — |
-| 24 | node http.Server (built-in) | node-22.22.3 | node | event-loop | llhttp (C, called via N-API) | **QUADRATIC** | 5.5 | 282.02s @ N=250,000 | 2 |
-| 25 | bandit | 1.11.1 | beam | actor | Bandit.HTTP1.Socket (hand-roll | **QUADRATIC** | 138 | 41.972s @ N=250,000 | 1.05 |
+| 24 | bandit | 1.11.1 | beam | actor | Bandit.HTTP1.Socket (hand-roll | **VULNERABLE-PER-CHUNK** | 138 | 41.972s @ N=250,000 | 1.05 |
+| 25 | node http.Server (built-in) | node-22.22.3 | node | event-loop | llhttp (C, called via N-API) | **QUADRATIC** | 5.5 | 282.02s @ N=250,000 | 2 |
 | 26 | express | 5.2.1 | node | event-loop | node http.Server (llhttp) unde | **QUADRATIC** | — | 324s @ N=250,000 | 2 |
 | 27 | fastify | 5.x | node | event-loop | node http.Server (llhttp) unde | **QUADRATIC** | — | 339s @ N=250,000 | 2 |
 
@@ -41,5 +41,5 @@ Generated automatically from `data/wave*.json`. Re-render via
 | verdict | count |
 |---------|------:|
 | BATCHES-CORRECTLY | 1 |
-| VULNERABLE-PER-CHUNK | 22 |
-| QUADRATIC | 4 |
+| VULNERABLE-PER-CHUNK | 23 |
+| QUADRATIC | 3 |

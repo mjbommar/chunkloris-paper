@@ -104,4 +104,7 @@ Each of these CVEs targets a \emph{specific} cost in the
 chunked-TE pipeline (per-byte hex parsing, per-header coalescing,
 integer-overflow on chunk size). None targets the per-chunk
 application-dispatch cost we measure here. The bug class we
-characterize is the same family but a previously-unnamed shape.
+characterize is the same family but a previously-unnamed shape;
+Section~\ref{sec:related} positions this lineage against the
+broader HTTP DoS literature (slow-DoS, algorithmic-complexity, and
+the modern HTTP/2 control-plane and decompression attacks).
