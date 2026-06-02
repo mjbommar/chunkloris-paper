@@ -11,9 +11,11 @@ Section~\ref{sec:method-modes}.
 \begin{table}[h]
   \centering
   \footnotesize
-  \caption{Master comparison matrix. Per-chunk cost is the server-CPU
-  cost measured under Mode B (paced \SI{100}{\micro\second},
-  $N{=}\num{250000}$, 1\,vCPU). Auto-generated from
+  \caption{Master comparison matrix. Per-chunk cost is the
+  wall-derived per-chunk cost under Mode B (paced
+  \SI{100}{\micro\second}, $N{=}\num{250000}$, 1\,vCPU; $\approx$CPU
+  where the core is saturated, Section~\ref{sec:method-metric}).
+  Auto-generated from
   \texttt{data/wave*.json} via \texttt{scripts/render\_matrix.py}.}
   \label{tab:matrix}
   \input{figures/matrix_table}

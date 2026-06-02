@@ -106,7 +106,8 @@ application handler.
   walks an accumulator whose size grows with N, giving
   $\Theta(N^2)$ total work. In our sample, the three Node
   \fwid{http.Server}-based servers fit this $\Theta(N^2)$ pattern
-  via the \fname{maybeReadMore}-driven microtask queue.}
+  via the \fname{maybeReadMore}-driven \fname{read(0)} re-scan over
+  a growing retained \fname{Readable} buffer.}
   \label{fig:arch-three-classes}
 \end{figure*}
 
@@ -146,12 +147,22 @@ Some servers carry per-chunk \emph{state} that itself grows with
 the number of chunks already received. When the per-chunk
 operation has to inspect that state, the total work can become
 quadratic. In our sample this manifests in the three Node
-\fwid{http.Server}-based servers: the \fname{maybeReadMore} ->
-\fname{process.nextTick} chain schedules a callback per chunk;
-each scheduled callback drains some prefix of the microtask
-queue; the queue grows with the number of pushed chunks, the
-drain work per scheduled callback grows similarly, and total
-work is $\Theta(N^2)$ (measured exponent $\sim 1.7$--$2.0$).
+\fwid{http.Server}-based servers. The accumulating state is the
+\fname{Readable}'s own internal buffer
+(\fname{\_readableState.buffer}). When the parser pushes chunks
+faster than the handler drains them, \fname{maybeReadMore} keeps
+the stream in its read-more regime: a single
+\fname{process.nextTick(maybeReadMore\_)} is re-armed (guarded by
+the \fname{kReadingMore} state flag, so at most one tick is ever
+in flight), and \fname{maybeReadMore\_} repeatedly calls
+\fname{stream.read(0)} while the buffer is non-empty. Both the
+per-turn \fname{read(0)} re-scan and V8's scavenge cost grow with
+the size of the retained buffer, which grows with the number of
+chunks not yet consumed; total work is $\Theta(N^2)$ (measured
+exponent $\sim 1.7$--$2.0$). The microtask queue itself does
+\emph{not} grow with chunk count -- the \fname{kReadingMore}
+guard bounds it to one pending tick -- so the cost is buffer- and
+GC-driven, not microtask-queue-drain-driven.
 
 \fwid{Bandit} exhibits a structurally similar "per-chunk
 operation walks accumulated state" pattern --
@@ -161,8 +172,16 @@ on the accumulating iolist on every chunk (89.3\% of CPU in the
 \emph{not} grow quadratically: the measured exponent is
 $\sim 1.05$ and per-chunk cost \emph{falls} with $N$
 (155\,$\to$\,138\,\si{\micro\second}/chunk under Mode B),
-indicating Bandit chunks the accumulator in a way that keeps the
-per-chunk walk bounded over this range. We therefore treat
+because the accumulator walk is bounded: \fname{Plug}'s
+\fname{read\_body/2} is invoked with \fname{length: 64\_000}, and
+\fname{do\_read\_chunked\_data!/4} returns \fname{\{:more, ...\}}
+and resets its accumulator once the accumulated iolist reaches
+that bound (\fname{lib/bandit/http1/socket.ex}), so
+\fname{iolist\_size/1} walks at most a \SI{64}{\kibi\byte} window
+per chunk rather than the whole body. The walk is thus
+$O(\min(M,\,\SI{64}{\kibi\byte})) = O(1)$ in $N$, making the total
+$\Theta(N)$ with a high constant (a larger \fname{length:} bound
+would raise the constant but keep it linear). We therefore treat
 Bandit as a high-constant linear case, not a quadratic one.
 (Adjacent prior art: CVE-2026-7790~\cite{cve_2026_7790_cowlib}
 in \fwid{cowlib}'s chunk-size hex parser is a genuine quadratic

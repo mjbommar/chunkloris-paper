@@ -121,11 +121,15 @@ The profile hot path is:
 \fname{process.nextTick}
 (\fname{node:internal/process/task\_queues:111}).
 
-The \fname{nextTick} call per chunk is the quadratic mechanism.
-Each scheduled callback drains a prefix of the microtask queue;
-the queue grows with the number of pushed chunks, so the drain
-work per scheduled callback grows linearly, giving $\Theta(N^2)$
-total work.
+The quadratic mechanism is the \fname{maybeReadMore\_}
+\fname{read(0)} loop re-scanning the \fname{Readable}'s retained
+internal buffer (\fname{\_readableState.buffer}, a plain array)
+once per event-loop turn while the buffer drains slower than it
+fills; the per-turn cost and V8 scavenge cost both grow with the
+retained buffer size, which grows with chunk count, giving
+$\Theta(N^2)$. (The \fname{maybeReadMore} \fname{nextTick} is
+re-armed under a \fname{kReadingMore} guard and is \emph{not}
+itself quadratic.)
 
 \subsection{JVM}
 \label{sec:pf-jvm}
@@ -254,7 +258,9 @@ We measured six servers covering five language ecosystems:
 \fwid{hypercorn-h2}, \fwid{node http2.Server}, \fwid{Kestrel-h2},
 \fwid{Vert.x-h2}, \fwid{rust-hyper-h2}, and \fwid{go-h2c}.
 
-All six are \textsc{VULNERABLE-PER-FRAME} at the DATA-frame level,
+All six exhibit the same per-frame amplification at the DATA-frame
+level (recorded as \textsc{VULNERABLE-PER-CHUNK} in the dataset's
+verdict taxonomy, which does not distinguish the h2 frame case),
 with per-frame costs clustered in 4--10 \(\mu\)s/frame -- the same
 band as their HTTP/1 chunked-TE measurements (allowing for the
 extra h2 framing overhead). Three key observations:

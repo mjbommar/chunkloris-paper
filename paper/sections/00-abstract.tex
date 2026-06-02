@@ -36,8 +36,9 @@ A single superlinear mechanism, exhibited by the three
 Node \fwid{http.Server}-based servers (the built-in
 \fwid{http.Server} plus \fwid{express} and \fwid{fastify} atop
 it), drives genuine $\Theta(N^2)$ wall-time scaling (measured
-exponent $\sim 1.7$--$2.0$ in our $N$ range) via the
-\fname{process.nextTick} cost of the Readable substrate. A
+exponent $\sim 1.7$--$2.0$ in our $N$ range) via a
+growing-retained-buffer re-scan in the \fname{Readable} substrate
+(not, as one might assume, microtask-queue growth). A
 \SI{1.5}{\mebi\byte} attacker request drives Node
 \fwid{http.Server} to 282\,s of single-core \emph{wall} time
 (Mode~A, $N{=}\num{250000}$, server pinned at one vCPU and
