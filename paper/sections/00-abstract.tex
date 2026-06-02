@@ -54,25 +54,15 @@ high-constant linear case ($\sim$\SI{138}{\micro\second}/chunk via
 an \fname{erlang:iolist\_size}/iolist walk per chunk in
 \fname{do\_read\_chunk!/4}), not a $\Theta(N^2)$ blow-up.
 
-The "deploy behind nginx" mitigation widely advised in framework
-documentation is empirically confirmed. With default
-\fname{proxy\_request\_buffering~on}, an
-upstream-instrumented end-to-end probe (prober
-\(\to\) nginx-proxy \(\to\) instrumented Python upstream) shows
-the upstream receives \emph{exactly one}
-\fname{Content-Length}-framed request with no
-\fname{Transfer-Encoding} header and \emph{one} \fname{recv()}
-covering both headers and the entire body. With
-\fname{proxy\_request\_buffering~off} the same probe forwards
-the chunked stream unchanged, with the upstream seeing multiple
-\fname{recv()}s and a \fname{Transfer-Encoding: chunked} header.
-Apache \fname{mod\_proxy\_http} is documented to behave the
-same way (not directly measured). \fwid{HAProxy} does
-\emph{not} aggregate: it streams by default, and
-\fname{http-buffer-request} only waits for one buffer's worth,
-not a per-chunk accumulator. Direct-exposed servers,
-HAProxy-fronted deployments, and any deployment with buffering
-disabled inherit the full per-chunk cost.
+The widely-advised "deploy behind nginx" mitigation is
+empirically confirmed: with default
+\fname{proxy\_request\_buffering~on}, an upstream-instrumented
+end-to-end probe shows the upstream receiving a single
+\fname{Content-Length}-framed request in one \fname{recv()}, the
+chunk stream fully coalesced. \fwid{HAProxy} does \emph{not}
+aggregate (it streams by default, and \fname{http-buffer-request}
+waits only for one buffer), so direct-exposed, HAProxy-fronted, or
+buffering-disabled deployments inherit the full per-chunk cost.
 
 A Wave 3 measurement set extends the survey to HTTP/2 DATA frames
 and WebSocket text frames. Every HTTP/2 server in our sample

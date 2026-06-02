@@ -93,6 +93,19 @@ in Table~\ref{tab:headline-costs}.
   $N{=}\num{250000}$ CPU cell.}
 \end{table}
 
+Even setting aside the contested quadratic \emph{wall} figures,
+the directly-measured Mode~B \emph{CPU} asymmetry is already
+substantial: a \SI{1.5}{\mebi\byte} request costs a measured
+$\sim$29\,CPU-s on nginx-as-origin and $\sim$35\,CPU-s on
+\fwid{bandit} (Table~\ref{tab:headline-costs},
+\textsuperscript{c}~rows) -- 19--23 CPU-seconds per attacker-MB
+on the wire, one to two orders of magnitude above the
+$\sim$1--3\,CPU-s/MB a coalescing server such as Vert.x or
+Go net/http pays. This CPU asymmetry is the paper's defensible
+headline impact; the larger per-request \emph{wall} figures for
+the quadratic Node servers below are wall-derived (and, for
+\fwid{express}, extrapolated) and should be read as upper bounds.
+
 A residential broadband uplink at \SI{20}{\mebi\bit\per\second}
 sustains roughly \SI{2.5}{\mebi\byte\per\second}, comfortably
 servicing one or two attacker connections per second. Against

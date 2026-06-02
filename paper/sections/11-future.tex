@@ -84,7 +84,10 @@ Prober and server run on one host. Mode~B's prober busy-waits
 (\SI{100}{\micro\second} CPU spin per chunk) on the same machine
 as the 1-vCPU server-under-test; if they share a core, prober
 spin steals cycles and \emph{inflates} server wall time. Direction
-of bias: server wall time biased upward.
+of bias: server wall time biased upward. A targeted re-run pinning
+prober and SUT to disjoint physical cores (\texttt{--cpuset-cpus})
+on a subset of cells would isolate this bias; we have not yet
+performed it.
 
 \paragraph{CFS quota vs.\ dedicated core.}
 \texttt{--cpus=1} imposes a CFS bandwidth quota (\SI{100}{\milli\second}

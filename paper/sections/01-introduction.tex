@@ -55,15 +55,16 @@ omitted from this ranking.
 \paragraph{Contributions.}
 \begin{enumerate}
   \item The first systematic cross-ecosystem measurement of
-  chunked-TE delivery granularity in production HTTP servers,
+  chunked-TE delivery granularity and its per-chunk CPU cost in
+  production HTTP servers,
   spanning 7 language ecosystems and three C servers
   (Section~\ref{sec:perframework}, Section~\ref{sec:synthesis}).
   \item Identification of the superlinear route exhibited by the
-  three Node \fwid{http.Server}-based servers (the Readable
-  substrate's \fname{process.nextTick} drain), and a separate
-  high-constant linear cost in \fwid{bandit}'s iolist accumulator
-  (measured exponent $\sim 1.05$) that does \emph{not} reach the
-  $\Theta(N^2)$ regime in our $N$ range.
+  three Node \fwid{http.Server}-based servers (a \fname{read(0)}
+  re-scan over a growing retained \fname{Readable} buffer), and a
+  separate high-constant \emph{linear} cost in \fwid{bandit}'s
+  iolist accumulator that does not reach the $\Theta(N^2)$ regime
+  (Section~\ref{sec:rc-mechanisms}).
   \item Identification of an HTTP/1.1 existence proof
   (\fname{System.IO.Pipelines}/Kestrel) that the bug class can be
   structurally closed at the server layer -- corroborated by four

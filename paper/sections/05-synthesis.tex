@@ -72,11 +72,15 @@ share one substrate:
 
 \begin{itemize}
   \item \emph{Node.js Readable substrate.} Each parsed chunk
-    causes \fname{llhttp on\_body} -> \fname{parserOnBody} ->
-    \fname{socket.push(buf)} -> \fname{addChunk} ->
-    \fname{maybeReadMore} -> \fname{process.nextTick}. The
-    \fname{nextTick} per chunk grows the microtask queue;
-    drain cost is superlinear in queue depth. The built-in
+    pushed into the \fname{Readable} keeps \fname{maybeReadMore}
+    in its read-more regime, where \fname{maybeReadMore\_}
+    repeatedly calls \fname{stream.read(0)} over the retained
+    \fname{\_readableState.buffer}. Both that per-turn re-scan
+    and V8's scavenge cost grow with the retained buffer, which
+    grows with the chunks not yet drained; total work is
+    $\Theta(N^2)$. The microtask queue itself does \emph{not}
+    grow -- the \fname{kReadingMore} guard bounds it to one
+    pending tick (Section~\ref{sec:rc-mechanisms}). The built-in
     \fwid{http.Server} reaches a measured exponent of
     $\sim 1.7$--$2.0$; \fwid{express} and \fwid{fastify} inherit
     the same substrate and the same shape.
