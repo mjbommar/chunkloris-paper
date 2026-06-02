@@ -1,13 +1,14 @@
-% !TEX program = lualatex
-% Build via:  make -C paper/   (or)  latexmk -lualatex main
-% arXiv: compiles with lualatex (fontspec/unicode-math); main.bbl is bundled
-% so the bibliography builds without biber. No -shell-escape required.
+% !TEX program = pdflatex
+% Build via:  make -C paper/   (or)  latexmk -pdf main
+% arXiv: compiles with pdflatex (newtx Times fonts); main.bbl is bundled so the
+% bibliography builds without biber. No -shell-escape and no Unicode engine.
 \documentclass[11pt,letterpaper]{article}
 
 %--- core packages ---------------------------------------------------
 \usepackage[a4paper,margin=1in]{geometry}
-\usepackage{fontspec}
-\usepackage{unicode-math}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{textcomp}
 \usepackage{microtype}
 \usepackage[english]{babel}
 \usepackage[final]{hyperref}
@@ -24,10 +25,12 @@
 \usepackage{subcaption}
 \usepackage{float}
 
-%--- math, graphs, diagrams -----------------------------------------
-% unicode-math (already loaded above) provides all amssymb glyphs natively;
-% loading amssymb would conflict on \eth and friends.
+%--- fonts: Times-like text + matching math (pdflatex) --------------
 \usepackage{amsmath}
+\usepackage{newtxtext}
+\usepackage{newtxmath}
+
+%--- math, graphs, diagrams -----------------------------------------
 \usepackage{siunitx}
 \sisetup{detect-all=true,group-separator={,}}
 \usepackage{xspace}
@@ -39,12 +42,6 @@
 %--- bibliography ---------------------------------------------------
 \usepackage[backend=biber,style=numeric,maxbibnames=99,sorting=none]{biblatex}
 \addbibresource{bib/references.bib}
-
-%--- fonts ---------------------------------------------------------
-\setmainfont{TeX Gyre Termes}
-\setsansfont{TeX Gyre Heros}
-\setmonofont{TeX Gyre Cursor}
-\setmathfont{TeX Gyre Termes Math}
 
 %--- metadata ------------------------------------------------------
 \title{\textbf{The Per-Chunk Tax}\\\large A cross-ecosystem survey of HTTP/1.1 chunked-transfer-encoding amplification in production servers}
@@ -94,9 +91,6 @@
 
 \section{Mitigation taxonomy}\label{sec:mitigation}
 \input{sections/08-mitigation}
-
-\section{Disclosure and ecosystem response}\label{sec:disclosure}
-\input{sections/09-disclosure}
 
 \section{Recommendations}\label{sec:recommendations}
 \input{sections/10-recommendations}

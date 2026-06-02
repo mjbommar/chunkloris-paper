@@ -1,5 +1,5 @@
 PAPER  = main
-ENGINE = lualatex
+ENGINE = pdflatex
 LFLAGS = -interaction=nonstopmode -halt-on-error
 FIGS   = $(wildcard figures/*.pdf)
 SRCS   = $(PAPER).tex sections/*.tex bib/references.bib
@@ -8,8 +8,8 @@ SRCS   = $(PAPER).tex sections/*.tex bib/references.bib
 
 all: $(PAPER).pdf
 
-# Explicit build: lualatex -> biber -> lualatex -> lualatex.
-# No -shell-escape required (no minted); arXiv builds the same way.
+# Explicit build: pdflatex -> biber -> pdflatex -> pdflatex.
+# No -shell-escape and no Unicode engine required; arXiv builds the same way.
 $(PAPER).pdf: $(SRCS) $(FIGS)
 	$(ENGINE) $(LFLAGS) $(PAPER).tex
 	biber $(PAPER)
@@ -30,7 +30,7 @@ figures:
 
 # Rebuild paper whenever a source file changes.
 watch:
-	latexmk -$(ENGINE) -pvc -interaction=nonstopmode $(PAPER).tex
+	latexmk -pdf -pvc -interaction=nonstopmode $(PAPER).tex
 
 # Self-contained source tarball for arXiv upload (bundles main.bbl).
 arxiv: $(PAPER).pdf

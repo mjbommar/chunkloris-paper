@@ -30,14 +30,12 @@ HAProxy-fronted deployments, and any deployment with proxy
 buffering disabled inherit the full per-chunk cost.
 
 We argue that opt-in batching primitives modeled on Kestrel's
-Pipelines pump should be exposed by every event-loop HTTP server;
-that the bug class warrants a coordinated disclosure to the
-affected ecosystems; and that the operational advice "deploy
-behind nginx" deserves clearer documentation of its applicability
-and its limits.
+Pipelines pump should be exposed by every event-loop HTTP server,
+and that the operational advice "deploy behind nginx" deserves
+clearer documentation of its applicability and its limits.
 
 The reproducer harness, raw measurements, and figure-rendering
 scripts are published with this paper under the project at
 \texttt{projects/asgi-perchunk-survey/}. Anyone with Docker plus
-\fname{uv} plus \fname{lualatex} can reproduce every number in
+\fname{uv} plus \fname{pdflatex} can reproduce every number in
 this paper from the supplied harness.

@@ -32,7 +32,7 @@ the binding resource is parser/dispatcher CPU, not idle connection state.
 ## Layout
 
 ```
-paper/                     # the manuscript (arXiv-ready, lualatex)
+paper/                     # the manuscript (arXiv-ready, pdflatex)
   main.tex                 #   single-column article, 11pt; no minted/shell-escape
   sections/                #   00-abstract … 12-conclusion
   bib/references.bib
@@ -56,12 +56,13 @@ ARXIV-SUBMISSION.md        # arXiv form fields + package checklist
 
 ```bash
 cd paper
-make            # lualatex -> biber -> lualatex x2  ->  main.pdf
+make            # pdflatex -> biber -> pdflatex x2  ->  main.pdf
 make arxiv      # writes ../chunkloris-paper-arxiv.tar.gz (source + main.bbl)
 ```
 
-Requires a TeX Live with `lualatex`, `biber`, and `siunitx`. The build needs **no**
-`-shell-escape` (the code listings use plain `verbatim`).
+Requires a TeX Live with `pdflatex`, `biber`, `newtx`, and `siunitx`. The build
+needs **no** `-shell-escape` and no Unicode engine (the code listings use plain
+`verbatim`); it compiles on arXiv as-is.
 
 ## Reproduce the measurements
 

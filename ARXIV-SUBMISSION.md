@@ -8,12 +8,11 @@ generated from LaTeX.
 
 ## Engine note
 
-The manuscript uses `fontspec` + `unicode-math` + TeX Gyre fonts, so it builds
-with **lualatex** (not pdflatex). arXiv's AutoTeX detects `fontspec`/`unicode-math`
-and selects a Unicode engine automatically; no `00README` directive is normally
-required. The build needs **no** `-shell-escape` (there is no `minted`; code
-blocks use `verbatim`). If AutoTeX picks the wrong engine, add a `00README.json`
-to the tarball with `{"process": {"compiler": "lualatex"}}`.
+The manuscript builds with **pdflatex** (Times-like text and math via `newtx`).
+This is arXiv's default engine — no `00README` directive, no Unicode engine, and
+no `-shell-escape` required (there is no `minted`; code blocks use `verbatim`).
+The bundled `main.bbl` means arXiv need not run biber. Verified: the tarball
+compiles standalone with two `pdflatex` passes and zero undefined references.
 
 ---
 
@@ -74,7 +73,7 @@ cs.SE  (Software Engineering)
 **Comments**
 
 ```
-26 pages, 6 figures. Replication harness and measurement data at
+24 pages, 6 figures. Replication harness and measurement data at
 https://github.com/mjbommar/chunkloris-paper
 ```
 
@@ -87,14 +86,12 @@ Recommended: **CC BY 4.0**.
 ## Pre-submit checklist
 
 - [ ] `make -C paper arxiv` ran clean; tarball uploaded (not the PDF).
-- [ ] arXiv's compiled PDF matches the local 26-page build (title, author, 6
+- [ ] arXiv's compiled PDF matches the local 24-page build (title, author, 6
       figures, all references resolved, links clickable).
 - [ ] Title and abstract on the form match the manuscript.
 - [ ] Categories: cs.CR primary; cs.NI + cs.SE cross-list.
 - [ ] Tarball contains only source: `main.tex`, `main.bbl`, `sections/*.tex`,
       `bib/references.bib`, `figures/*.pdf` — no scripts, no SVG, no harness.
-- [ ] Coordinated-disclosure status (Section 9) reflects reality at submission
-      time; update if upstream notifications have/haven't gone out.
 
 ## What is deliberately NOT in the arXiv package
 
