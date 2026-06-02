@@ -36,7 +36,7 @@ def main():
     bars = ax.barh(range(len(rows)), values, color=colors, edgecolor="black", linewidth=0.4)
     ax.set_yticks(range(len(rows)))
     ax.set_yticklabels(labels)
-    ax.set_xlabel(r"per-chunk server CPU cost ($\mu$s/chunk)")
+    ax.set_xlabel(r"per-chunk server cost ($\mu$s/chunk; wall-derived, $\approx$CPU where saturated)")
     ax.set_title("Per-chunk amplification across HTTP server ecosystems\n"
                  "(Mode B: paced 100 $\\mu$s gap, N=250K, 1 vCPU)")
     ax.set_xscale("log")

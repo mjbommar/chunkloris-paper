@@ -45,10 +45,12 @@ WebSocket servers are measured in Wave 3, 39 records total):
 \end{itemize}
 
 \noindent
-Figure~\ref{fig:headline-uschunk} ranks all 27 HTTP/1.1 servers
-by per-chunk cost under the canonical Mode B probe (paced
-\SI{100}{\micro\second} gap, \(N{=}\num{250000}\), 1 vCPU
-container).
+Figure~\ref{fig:headline-uschunk} ranks the 23 HTTP/1.1 servers
+that have a measured Mode~B $N{=}\num{250000}$ cell (paced
+\SI{100}{\micro\second} gap, 1 vCPU container) by per-chunk cost;
+\fwid{express} and \fwid{fastify} (extrapolated cells) and
+\fwid{axum} and \fwid{actix-web} (measured at other $N$) are
+omitted from this ranking.
 
 \paragraph{Contributions.}
 \begin{enumerate}
@@ -92,10 +94,12 @@ cause, threat model, and mitigations.
 \begin{figure}[t]
   \centering
   \includegraphics[width=0.95\linewidth]{figures/us_per_chunk.pdf}
-  \caption{Per-chunk server cost across all 27 HTTP/1.1 servers
-  measured (Mode B: paced \SI{100}{\micro\second} gap,
-  $N{=}\num{250000}$ one-byte chunks, 1\,vCPU container).
-  Log-scale x-axis. Spans nearly three orders of magnitude. Kestrel
+  \caption{Per-chunk server cost across the 23 HTTP/1.1 servers
+  with a measured Mode~B $N{=}\num{250000}$ cell (paced
+  \SI{100}{\micro\second} gap, one-byte chunks, 1\,vCPU container;
+  the cost is wall-derived, $\approx$CPU where the core is
+  saturated, Section~\ref{sec:method-metric}). Log-scale x-axis,
+  spanning nearly two orders of magnitude. Kestrel
   (\textsc{BATCHES-CORRECTLY}, leftmost) is the single existence
   proof among HTTP/1.1 servers.}
   \label{fig:headline-uschunk}
