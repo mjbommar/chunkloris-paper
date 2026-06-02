@@ -112,10 +112,9 @@ ecosystem is rarely the fastest at this workload}.
 Figure~\ref{fig:scaling} plots wall time as a function of $N$
 on log-log axes; the three QUADRATIC servers (the Node trio)
 separate cleanly from the linear pack. Figure~\ref{fig:mode-a-vs-b} contrasts
-Mode A versus Mode B at $N{=}\num{250000}$ and shows that for
-several servers Mode A is two to three orders of magnitude
-faster than Mode B, hiding the bug from any test methodology that
-omits paced probes.
+Mode A versus Mode B at $N{=}\num{250000}$; the per-server gap
+(quantified in the caption) is why any test methodology that omits
+paced probes can miss the bug entirely.
 
 \begin{figure}[h]
   \centering
